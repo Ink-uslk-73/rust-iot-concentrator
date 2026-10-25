@@ -1,0 +1,35 @@
+﻿[server]
+dashboard_addr = "0.0.0.0:8443"
+terminal_addr = "0.0.0.0:8444"
+require_mtls = true
+min_tls_version = "1.3"
+
+[tls]
+cert = "certs/server.crt"
+key = "certs/server.key"
+ca = "certs/ca.crt"
+client_cert_required = true
+
+[websocket]
+ping_interval_sec = 30
+max_frame_size = 1048576
+max_sessions = 16
+
+[terminal]
+allowed_domains = ["core", "vm-hard", "vm-soft", "vm-life", "storage"]
+allowed_commands = ["modbus-read", "opcua-browse", "diag", "logs", "top", "df", "smartctl"]
+deny_shell = true
+audit_file = "logs/terminal-audit.log"
+session_timeout_sec = 1800
+max_concurrent = 4
+
+[audit]
+enabled = true
+file = "logs/terminal-audit.log"
+to_diagnostics = true
+
+[rest]
+enabled = true
+snapshot_path = "/api/snapshot"
+health_path = "/api/health"
+dump_download_path = "/api/dump"

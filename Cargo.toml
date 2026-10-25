@@ -1,0 +1,54 @@
+﻿[package]
+name = "rust-iot-concentrator"
+version = "4.0.0"
+edition = "2021"
+rust-version = "1.75"
+description = "Телекоммуникационный концентратор v4.0"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+tokio = { version = "1.40", features = ["full"] }
+tokio-util = { version = "0.7", features = ["codec"] }
+futures = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8"
+clap = { version = "4.5", features = ["derive"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing-appender = "0.2"
+axum = { version = "0.7", features = ["ws", "macros"] }
+axum-server = { version = "0.7", features = ["tls-rustls"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["trace", "fs", "cors"] }
+rustls = "0.23"
+rustls-pemfile = "2.1"
+tokio-rustls = "0.26"
+portable-pty = "0.8"
+russh = "0.48"
+crossbeam = "0.8"
+parking_lot = "0.12"
+aya = { version = "0.12", optional = true }
+rust-embed = { version = "8.5", features = ["interpolate-folder-path"] }
+mime_guess = "2.0"
+anyhow = "1.0"
+thiserror = "1.0"
+uuid = { version = "1.10", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+libc = "0.2"
+
+[features]
+default = []
+ebpf = ["aya"]
+
+[dev-dependencies]
+tempfile = "3.12"
+tokio-test = "0.4"
+serial_test = "3.1"
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+strip = false
+panic = "unwind"
+debug = true

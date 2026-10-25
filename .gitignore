@@ -1,0 +1,11 @@
+﻿/target
+/logs
+/certs/*.key
+/certs/*.crt
+/certs/*.p12
+/certs/*.csr
+/certs/*.srl
+/ui/node_modules
+/ui/dist
+*.core
+part*.ps1
