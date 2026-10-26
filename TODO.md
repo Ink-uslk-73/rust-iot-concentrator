@@ -1,57 +1,37 @@
 ﻿# TODO - rust-iot-concentrator
 
-РџСЂРёРѕСЂРёС‚РµС‚С‹: P0 - РєСЂРёС‚РёС‡РЅРѕ, P1 - РІС‹СЃРѕРєРёР№, P2 - СЃСЂРµРґРЅРёР№, P3 - РЅРёР·РєРёР№.
+Приоритеты: P0 - критично, P1 - высокий, P2 - средний, P3 - низкий.
 
-## P0 - Р±Р»РѕРєРёСЂСѓРµС‚ production
+## P0 - блокирует production
 
-- [ ] **P0.5** Р“СЂСѓРїРїРёСЂРѕРІРєР° СѓСЃС‚СЂРѕР№СЃС‚РІ РїРѕ РїРѕСЂС‚Сѓ (РѕС‚РєСЂС‹РІР°С‚СЊ `/dev/ttyM0` РѕРґРёРЅ СЂР°Р·, Р° РЅРµ N СЂР°Р· Р·Р° С†РёРєР»).
-  - Р’ `modbus.rs` СЃРіСЂСѓРїРїРёСЂРѕРІР°С‚СЊ `cfg.devices` РїРѕ `port`.
-  - РћС‚РєСЂС‹РІР°С‚СЊ `SerialStream` РѕРґРёРЅ СЂР°Р· РЅР° РїРѕСЂС‚.
-  - Р”Р»СЏ РєР°Р¶РґРѕРіРѕ slave вЂ” РЅРѕРІС‹Р№ `attach_slave` РЅР° РєР»РѕРЅРµ РёР»Рё РїРµСЂРµРѕС‚РєСЂС‹С‚РёРё.
-- [ ] **P0.7** `poll_ms` РёР· `registers.json`.
-  - Р”РѕР±Р°РІРёС‚СЊ `"poll_ms": 50` РЅР° РІРµСЂС…РЅРёР№ СѓСЂРѕРІРµРЅСЊ `registers.json`.
-  - Р§РёС‚Р°С‚СЊ РІ `ModbusConfig::load`, СѓР±СЂР°С‚СЊ Р¶С‘СЃС‚РєРёРµ 10 РјСЃ.
-  - Р’Р°Р»РёРґР°С†РёСЏ `quantity <= 125` (Modbus limit).
+- [x] **P0.5** Группировка устройств по порту.
+- [x] **P0.7** `poll_ms` из `registers.json` + валидация `quantity <= 125`.
 
-## P1 - РІС‹СЃРѕРєР°СЏ С†РµРЅРЅРѕСЃС‚СЊ
+## P1 - высокая ценность
 
-- [ ] **P1.1** РРЅС‚РµРіСЂР°С†РёСЏ СЃ AIG-502 РїРѕ REST.
-  - Р§С‚РµРЅРёРµ `config.json` (ThingsPro twin) С‡РµСЂРµР· `thingspro-api-v1`.
-  - Drift detection (СЃСЂР°РІРЅРµРЅРёРµ СЃ baseline).
-  - ATT&CK-РјР°РїРїРёРЅРі СЃРѕР±С‹С‚РёР№ (30 С‚РµС…РЅРёРє, РјРёРЅРёРјСѓРј 10).
-- [ ] **P1.3** `cargo test` - РїСЂРѕРІРµСЂРёС‚СЊ, С‡С‚Рѕ 4 С‚РµСЃС‚Р° storage РїСЂРѕС…РѕРґСЏС‚ (Рё РѕСЃС‚Р°Р»СЊРЅС‹Рµ ~75).
-  - `cargo test --lib`
-  - `cargo test --test storage_tests`
-  - РСЃРїСЂР°РІРёС‚СЊ РїР°РґР°СЋС‰РёРµ С‚РµСЃС‚С‹.
-- [ ] **P1.4** РЎР±РѕСЂРєР° РїРѕРґ AIG-502 (x86_64 Linux).
-  - `cargo build --release --target x86_64-unknown-linux-gnu`
-  - РџСЂРѕРІРµСЂРёС‚СЊ, С‡С‚Рѕ Р±РёРЅР°СЂРЅРёРє Р·Р°РїСѓСЃРєР°РµС‚СЃСЏ РЅР° Debian 11 (AIG-502).
+- [x] **P1.1** Интеграция с AIG-502 по REST (client, drift, ATT&CK, poller).
+- [x] **P1.3** `cargo test` - все тесты проходят.
+- [ ] **P1.4** Обновление `tokio-modbus` до 0.17 (переиспользование `Context`).
 
-## P2 - СЃСЂРµРґРЅРёР№ РїСЂРёРѕСЂРёС‚РµС‚
+## P2 - средний приоритет
 
-- [ ] **P2.2** Р”Р°С€Р±РѕСЂРґ Svelte (`ui/`).
-  - РџР»Р°РЅС€РµС‚ СЃ РєРѕРєРїРёС‚РѕРј: С‚РµР»РµРјРµС‚СЂРёСЏ, СЂРµР¶РёРј, РјРµС‚СЂРёРєРё, СЃРѕР±С‹С‚РёСЏ.
-  - РўРµСЂРјРёРЅР°Р» (xterm.js).
-  - mTLS + WSS РЅР° 8443.
-- [ ] **P2.6** `unsafe` РІ С‚РµСЃС‚Рµ `balancer` (`degrades_after_hysteresis`).
-  - Р—Р°РјРµРЅРёС‚СЊ type punning РЅР° `Arc<MockCpu>` + `downcast` С‡РµСЂРµР· `Any`.
-- [ ] **P2.7** eBPF РґР»СЏ CPU (`ebpf_cpu.rs`).
-  - РЎРµР№С‡Р°СЃ Р·Р°РіР»СѓС€РєР°, СЂР°Р±РѕС‚Р°РµС‚ `/proc/stat`.
-  - aya + `.bpf.c` + `PERCPU_ARRAY`.
+- [ ] **P2.2** Дашборд Svelte (`ui/`).
+- [ ] **P2.11** Вынести SOFT в отдельную VM (cores 8-31, node 0).
+- [ ] **P2.12** Вынести LIFE в отдельную VM (cores 72-95, node 1).
+- [ ] **P2.13** Единая модель эксплуатации: все три домена - VM.
 
-## P3 - РЅРёР·РєРёР№ РїСЂРёРѕСЂРёС‚РµС‚
+## P3 - низкий приоритет
 
-- [ ] **P3.8** `README.md` СЃ quick start + `CHANGELOG.md`.
-- [ ] **P3.9** РџСЂРѕС„РёР»РёСЂРѕРІР°РЅРёРµ NUMA (`numastat`, `perf`) Рё РѕР±РѕСЃРЅРѕРІР°РЅРёРµ СЂР°СЃРєР»Р°РґРєРё.
-- [ ] **P3.10** `transport/` - shmem-ring РґР»СЏ РјРµР¶РїР»Р°С‚РЅРѕРіРѕ РѕР±РјРµРЅР° (PLATE-A/B/C).
+- [ ] **P3.8** `README.md` с quick start + `CHANGELOG.md`.
+- [ ] **P3.9** Профилирование NUMA.
+- [ ] **P3.10** `transport/` - shmem-ring для межплатного обмена.
 
-## РЎРґРµР»Р°РЅРѕ
+## Отдельные репозитории
 
-- [x] РњРѕРґСѓР»СЊ 1: СЃС‚СЂСѓРєС‚СѓСЂР°, `HARDWARE.md`, `Cargo.toml`, `config/`, `certs/`, tests.
-- [x] РњРѕРґСѓР»СЊ 2: `core/bus.rs`, `core/mode_switch.rs`.
-- [x] РњРѕРґСѓР»СЊ 3: `numa.rs`, `core/dispatcher.rs`, `gateway/` (TLS + mTLS).
-- [x] РњРѕРґСѓР»СЊ 4: `hard_pool/`, `monitoring/`, `core/balancer.rs`.
-- [x] РњРѕРґСѓР»СЊ 5: `metrics/`, `vm/` (4 РґРѕРјРµРЅР°), `terminal/`.
-- [x] РњРѕРґСѓР»СЊ 6: `protocols/` (13 Р°РґР°РїС‚РµСЂРѕРІ, Modbus RTU РґР»СЏ AIG-502).
-- [x] РњРѕРґСѓР»СЊ 7: `main.rs` (wiring), `systemd/`, `scripts/`, `docs/`.
-- [x] РњРѕРґСѓР»СЊ 8: `storage/` (PostgreSQL + JSON fallback), `api/` (REST + SSE), tests, OpenAPI.
+- [x] **`rust-iot-concentrator-tablet`** - Flutter-клиент (Android 8.0+, Windows).
+  - Репозиторий: https://github.com/Ink-uslk-73/rust-iot-concentrator-tablet
+  - Статус: создан, README + TODO.
+
+## Сделано
+
+- [x] Модуль 1-8 (структура, core, numa, dispatcher, gateway, hard_pool, monitoring, balancer, metrics, vm, terminal, protocols, main, systemd, scripts, docs, storage, api, tests).
