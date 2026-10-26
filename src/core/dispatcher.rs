@@ -203,7 +203,7 @@ impl Dispatcher {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::bus::{Bus, BusPayload, DiagLevel};
+    use crate::core::bus::{Bus, BusPayload};
 
     fn make() -> (Dispatcher, DomainReceivers, Bus) {
         let (bus, _rx) = Bus::new(16, 16, 16, 16);

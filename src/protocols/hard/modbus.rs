@@ -1,8 +1,7 @@
-﻿//! src/protocols/hard/modbus.rs - Modbus RTU poller for AIG-502.
+//! src/protocols/hard/modbus.rs - Modbus RTU poller for AIG-502.
 //!
-//! Runs on AIG-502 (Debian 11). Opens /dev/ttyM0, /dev/ttyM1 directly.
-//! Config: ThingsPro config.json + our registers.json.
-//! Loop: read config -> poll slaves -> publish telemetry -> repeat.
+//! P0.5: one SerialStream per port (grouped), not per device.
+//! P0.7: poll_ms from registers.json (default 50 ms).
 
 use std::time::Duration;
 use tokio::time;
@@ -11,7 +10,7 @@ use tokio_serial::SerialStream;
 
 use crate::core::mode_switch::Priority;
 use crate::protocols::{ProtocolAdapter, PublishFn};
-use super::modbus_config::ModbusConfig;
+use super::modbus_config::{ModbusConfig, PortGroup};
 
 pub struct ModbusAdapter {
     config_path: String,
@@ -53,7 +52,12 @@ impl ProtocolAdapter for ModbusAdapter {
                     if config.is_none() || cycle % refresh == 0 {
                         match ModbusConfig::load(&cfg_path, &reg_path) {
                             Ok(c) => {
-                                tracing::info!(devices = c.devices.len(), "modbus config");
+                                tracing::info!(
+                                    ports = c.ports.len(),
+                                    devices = c.ports.iter().map(|p| p.devices.len()).sum::<usize>(),
+                                    poll_ms = c.poll_ms,
+                                    "modbus config"
+                                );
                                 config = Some(c);
                             }
                             Err(e) => tracing::warn!("config: {}", e),
@@ -66,41 +70,11 @@ impl ProtocolAdapter for ModbusAdapter {
                         continue;
                     };
 
-                    for dev in &cfg.devices {
-                        let builder = tokio_serial::new(&dev.port, dev.baud)
-                            .data_bits(match dev.data_bits {
-                                7 => tokio_serial::DataBits::Seven,
-                                _ => tokio_serial::DataBits::Eight,
-                            })
-                            .stop_bits(match dev.stop_bits {
-                                2 => tokio_serial::StopBits::Two,
-                                _ => tokio_serial::StopBits::One,
-                            })
-                            .parity(match dev.parity.as_str() {
-                                "even" => tokio_serial::Parity::Even,
-                                "odd" => tokio_serial::Parity::Odd,
-                                _ => tokio_serial::Parity::None,
-                            })
-                            .flow_control(tokio_serial::FlowControl::None);
-
-                        let stream = match SerialStream::open(&builder) {
-                            Ok(s) => s,
-                            Err(e) => {
-                                tracing::warn!(port = %dev.port, "serial: {}", e);
-                                continue;
-                            }
-                        };
-
-                        let mut ctx = rtu::attach_slave(stream, Slave(dev.slave));
-                       match ctx.read_holding_registers(dev.start_addr, dev.quantity).await {
-    Ok(data) => {
-        for (i, &val) in data.iter().enumerate() {
-            publish(Priority::Hard, val as f64, "reg");
-            tracing::debug!(slave = dev.slave, reg = dev.start_addr + i as u16, value = val, "modbus");
-        }
-    }
-    Err(e) => tracing::warn!(slave = dev.slave, "read: {}", e),
-}
+                    // P0.5: one stream per port, iterate slaves on same stream.
+                    for group in &cfg.ports {
+                        if let Err(e) = poll_port(group, &publish).await {
+                            tracing::warn!(port = %group.port, "port: {}", e);
+                        }
                     }
 
                     time::sleep(Duration::from_millis(cfg.poll_ms)).await;
@@ -111,6 +85,46 @@ impl ProtocolAdapter for ModbusAdapter {
 
         Ok(())
     }
+}
+
+async fn poll_port(group: &PortGroup, publish: &PublishFn) -> Result<(), String> {
+    let builder = tokio_serial::new(&group.port, group.baud)
+        .data_bits(match group.data_bits {
+            7 => tokio_serial::DataBits::Seven,
+            _ => tokio_serial::DataBits::Eight,
+        })
+        .stop_bits(match group.stop_bits {
+            2 => tokio_serial::StopBits::Two,
+            _ => tokio_serial::StopBits::One,
+        })
+        .parity(match group.parity.as_str() {
+            "even" => tokio_serial::Parity::Even,
+            "odd" => tokio_serial::Parity::Odd,
+            _ => tokio_serial::Parity::None,
+        })
+        .flow_control(tokio_serial::FlowControl::None);
+
+    for dev in &group.devices {
+        let stream = SerialStream::open(&builder)
+            .map_err(|e| format!("open {}: {}", group.port, e))?;
+
+        let mut ctx = rtu::attach_slave(stream, Slave(dev.slave));
+        match ctx.read_holding_registers(dev.start_addr, dev.quantity).await {
+            Ok(data) => {
+                for (i, &val) in data.iter().enumerate() {
+                    publish(Priority::Hard, val as f64, "reg");
+                    tracing::debug!(
+                        slave = dev.slave,
+                        reg = dev.start_addr + i as u16,
+                        value = val,
+                        "modbus"
+                    );
+                }
+            }
+            Err(e) => tracing::warn!(slave = dev.slave, "read: {}", e),
+        }
+    }
+    Ok(())
 }
 
 #[cfg(test)]

@@ -1,9 +1,17 @@
 ﻿{
+  "poll_ms": 50,
   "devices": [
     {
       "port_id": "0",
       "registers": [
-        { "slave": 1, "start_addr": 0, "quantity": 10 }
+        { "slave": 1, "start_addr": 0, "quantity": 10 },
+        { "slave": 2, "start_addr": 100, "quantity": 5 }
+      ]
+    },
+    {
+      "port_id": "1",
+      "registers": [
+        { "slave": 3, "start_addr": 0, "quantity": 20 }
       ]
     }
   ]

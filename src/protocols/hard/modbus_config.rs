@@ -1,8 +1,13 @@
-﻿//! src/protocols/hard/modbus_config.rs - config from AIG-502 (ThingsPro JSON + registers).
+﻿//! src/protocols/hard/modbus_config.rs - config from AIG-502.
 //!
-//! Two files:
-//! - /var/thingspro/data/config.json  -> ThingsPro serials (device, baudRate, parity, ...)
-//! - /var/thingspro/data/registers.json -> our register map (port_id -> slaves/registers)
+//! Reads two files:
+//! - /var/thingspro/data/config.json  -> ThingsPro serials
+//! - /var/thingspro/data/registers.json -> register map + poll_ms
+//!
+//! Validation:
+//! - port_id must exist in config.json
+//! - quantity <= 125 (Modbus function 3 limit)
+//! - poll_ms >= 1
 
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -41,8 +46,13 @@ pub struct DeviceRegisters {
 #[derive(Debug, Clone, Deserialize)]
 pub struct RegistersConfig {
     pub devices: Vec<DeviceRegisters>,
+    #[serde(default = "default_poll_ms")]
+    pub poll_ms: u64,
 }
 
+fn default_poll_ms() -> u64 { 50 }
+
+/// A resolved device: port settings + one register range.
 #[derive(Debug, Clone)]
 pub struct ResolvedDevice {
     pub port: String,
@@ -55,9 +65,20 @@ pub struct ResolvedDevice {
     pub quantity: u16,
 }
 
+/// Group of devices sharing the same physical port.
+#[derive(Debug, Clone)]
+pub struct PortGroup {
+    pub port: String,
+    pub baud: u32,
+    pub data_bits: u8,
+    pub parity: String,
+    pub stop_bits: u8,
+    pub devices: Vec<ResolvedDevice>,
+}
+
 #[derive(Debug, Clone)]
 pub struct ModbusConfig {
-    pub devices: Vec<ResolvedDevice>,
+    pub ports: Vec<PortGroup>,
     pub poll_ms: u64,
 }
 
@@ -82,24 +103,42 @@ impl ModbusConfig {
             .map_err(|e| format!("parse {}: {}", path, e))
     }
 
-    fn merge(tp: ThingsProConfig, regs: RegistersConfig) -> Result<Self, String> {
-        let mut ports: HashMap<String, ThingsProSerial> = HashMap::new();
+    pub fn merge(tp: ThingsProConfig, regs: RegistersConfig) -> Result<Self, String> {
+        // 1. Validate poll_ms.
+        if regs.poll_ms < 1 {
+            return Err(format!("poll_ms must be >= 1, got {}", regs.poll_ms));
+        }
+
+        // 2. Build ports map.
+        let mut ports_map: HashMap<String, ThingsProSerial> = HashMap::new();
         for (key, val) in &tp.serials {
-            if key == "arraySize" {
-                continue;
-            }
+            if key == "arraySize" { continue; }
             if let Ok(serial) = serde_json::from_value::<ThingsProSerial>(val.clone()) {
-                ports.insert(key.clone(), serial);
+                ports_map.insert(key.clone(), serial);
             }
         }
 
-        let mut devices = Vec::new();
+        // 3. Resolve devices and group by port.
+        let mut groups: HashMap<String, PortGroup> = HashMap::new();
         for dev in &regs.devices {
-            let Some(serial) = ports.get(&dev.port_id) else {
+            let Some(serial) = ports_map.get(&dev.port_id) else {
                 return Err(format!("port_id {} not in config.json", dev.port_id));
             };
             for reg in &dev.registers {
-                devices.push(ResolvedDevice {
+                if reg.quantity == 0 {
+                    return Err(format!(
+                        "port_id {} slave {}: quantity must be > 0",
+                        dev.port_id, reg.slave
+                    ));
+                }
+                if reg.quantity > 125 {
+                    return Err(format!(
+                        "port_id {} slave {}: quantity {} > 125 (Modbus limit)",
+                        dev.port_id, reg.slave, reg.quantity
+                    ));
+                }
+
+                let rd = ResolvedDevice {
                     port: serial.device.clone(),
                     baud: serial.baud_rate,
                     data_bits: serial.data_bits,
@@ -108,43 +147,85 @@ impl ModbusConfig {
                     slave: reg.slave,
                     start_addr: reg.start_addr,
                     quantity: reg.quantity,
-                });
+                };
+
+                groups
+                    .entry(serial.device.clone())
+                    .or_insert_with(|| PortGroup {
+                        port: serial.device.clone(),
+                        baud: serial.baud_rate,
+                        data_bits: serial.data_bits,
+                        parity: serial.parity.clone(),
+                        stop_bits: serial.stop_bits,
+                        devices: Vec::new(),
+                    })
+                    .devices
+                    .push(rd);
             }
         }
-        Ok(ModbusConfig { devices, poll_ms: 10 })
+
+        let mut ports: Vec<PortGroup> = groups.into_values().collect();
+        ports.sort_by(|a, b| a.port.cmp(&b.port));
+
+        Ok(ModbusConfig { ports, poll_ms: regs.poll_ms })
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::Write;
 
     fn tp_json() -> &'static str {
-        r#"{"serials":{"0":{"baudRate":9600,"dataBits":8,"device":"/dev/ttyM0","parity":"none","stopBits":1,"id":1},"arraySize":1}}"#
-    }
-    fn regs_json() -> &'static str {
-        r#"{"devices":[{"port_id":"0","registers":[{"slave":1,"start_addr":0,"quantity":10}]}]}"#
+        r#"{"serials":{"0":{"baudRate":9600,"dataBits":8,"device":"/dev/ttyM0","parity":"none","stopBits":1,"id":1},"1":{"baudRate":19200,"dataBits":8,"device":"/dev/ttyM1","parity":"none","stopBits":1,"id":2},"arraySize":2}}"#
     }
 
     #[test]
-    fn merge_ok() {
+    fn merge_groups_by_port() {
+        let regs_json = r#"{"devices":[
+            {"port_id":"0","registers":[{"slave":1,"start_addr":0,"quantity":10},{"slave":2,"start_addr":100,"quantity":5}]},
+            {"port_id":"1","registers":[{"slave":3,"start_addr":0,"quantity":20}]}
+        ],"poll_ms":50}"#;
         let tp: ThingsProConfig = serde_json::from_str(tp_json()).unwrap();
-        let regs: RegistersConfig = serde_json::from_str(regs_json()).unwrap();
+        let regs: RegistersConfig = serde_json::from_str(regs_json).unwrap();
         let cfg = ModbusConfig::merge(tp, regs).unwrap();
-        assert_eq!(cfg.devices.len(), 1);
-        assert_eq!(cfg.devices[0].port, "/dev/ttyM0");
-        assert_eq!(cfg.devices[0].baud, 9600);
+        assert_eq!(cfg.ports.len(), 2);
+        assert_eq!(cfg.poll_ms, 50);
+        let p0 = cfg.ports.iter().find(|p| p.port == "/dev/ttyM0").unwrap();
+        assert_eq!(p0.devices.len(), 2);
+        let p1 = cfg.ports.iter().find(|p| p.port == "/dev/ttyM1").unwrap();
+        assert_eq!(p1.devices.len(), 1);
     }
 
     #[test]
-    fn load_from_files() {
-        let dir = tempfile::tempdir().unwrap();
-        let tp = dir.path().join("config.json");
-        let rg = dir.path().join("registers.json");
-        std::fs::File::create(&tp).unwrap().write_all(tp_json().as_bytes()).unwrap();
-        std::fs::File::create(&rg).unwrap().write_all(regs_json().as_bytes()).unwrap();
-        let cfg = ModbusConfig::load(tp.to_str().unwrap(), rg.to_str().unwrap()).unwrap();
-        assert_eq!(cfg.devices.len(), 1);
+    fn default_poll_ms_is_50() {
+        let regs_json = r#"{"devices":[]}"#;
+        let tp: ThingsProConfig = serde_json::from_str(tp_json()).unwrap();
+        let regs: RegistersConfig = serde_json::from_str(regs_json).unwrap();
+        let cfg = ModbusConfig::merge(tp, regs).unwrap();
+        assert_eq!(cfg.poll_ms, 50);
+    }
+
+    #[test]
+    fn rejects_quantity_over_125() {
+        let regs_json = r#"{"devices":[{"port_id":"0","registers":[{"slave":1,"start_addr":0,"quantity":200}]}],"poll_ms":50}"#;
+        let tp: ThingsProConfig = serde_json::from_str(tp_json()).unwrap();
+        let regs: RegistersConfig = serde_json::from_str(regs_json).unwrap();
+        assert!(ModbusConfig::merge(tp, regs).is_err());
+    }
+
+    #[test]
+    fn rejects_zero_quantity() {
+        let regs_json = r#"{"devices":[{"port_id":"0","registers":[{"slave":1,"start_addr":0,"quantity":0}]}],"poll_ms":50}"#;
+        let tp: ThingsProConfig = serde_json::from_str(tp_json()).unwrap();
+        let regs: RegistersConfig = serde_json::from_str(regs_json).unwrap();
+        assert!(ModbusConfig::merge(tp, regs).is_err());
+    }
+
+    #[test]
+    fn rejects_unknown_port_id() {
+        let regs_json = r#"{"devices":[{"port_id":"99","registers":[{"slave":1,"start_addr":0,"quantity":10}]}],"poll_ms":50}"#;
+        let tp: ThingsProConfig = serde_json::from_str(tp_json()).unwrap();
+        let regs: RegistersConfig = serde_json::from_str(regs_json).unwrap();
+        assert!(ModbusConfig::merge(tp, regs).is_err());
     }
 }
