@@ -1,0 +1,95 @@
+﻿openapi: 3.0.3
+info:
+  title: Rust IoT Concentrator API
+  version: 1.0.0
+  description: Baseline and events API for tablet and SOC.
+
+paths:
+  /api/v1/devices/{device_id}/baseline:
+    get:
+      summary: Latest baseline for device
+      parameters:
+        - { name: device_id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: OK }
+        "404": { description: Not found }
+  /api/v1/devices/{device_id}/baseline/summary:
+    get:
+      summary: Baseline summary
+      parameters:
+        - { name: device_id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: OK }
+  /api/v1/devices/{device_id}/baseline/diff:
+    get:
+      summary: Drift (stub)
+      parameters:
+        - { name: device_id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: OK }
+  /api/v1/devices/{device_id}/baseline/capture:
+    post:
+      summary: Capture new baseline (requires approval_ticket)
+      parameters:
+        - { name: device_id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [operator, reason, approval_ticket, payload]
+              properties:
+                operator: { type: string }
+                reason: { type: string }
+                approval_ticket: { type: string }
+                payload: { type: object }
+      responses:
+        "200": { description: OK }
+        "403": { description: Missing approval ticket }
+  /api/v1/devices/{device_id}/baseline/history:
+    get:
+      summary: Baseline history
+      parameters:
+        - { name: device_id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: OK }
+  /api/v1/events:
+    get:
+      summary: List events
+      parameters:
+        - { name: device_id, in: query, schema: { type: string } }
+        - { name: severity,  in: query, schema: { type: string } }
+        - { name: technique, in: query, schema: { type: string } }
+        - { name: since,     in: query, schema: { type: string, format: date-time } }
+        - { name: limit,     in: query, schema: { type: integer, default: 100 } }
+      responses:
+        "200": { description: OK }
+  /api/v1/events/stream:
+    get:
+      summary: SSE stream of events
+      responses:
+        "200": { description: text/event-stream }
+  /api/v1/events/{event_id}:
+    get:
+      summary: Single event
+      parameters:
+        - { name: event_id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: OK }
+        "404": { description: Not found }
+  /api/v1/events/ack:
+    post:
+      summary: Ack event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [event_id, by]
+              properties:
+                event_id: { type: string }
+                by: { type: string }
+      responses:
+        "204": { description: Acked }

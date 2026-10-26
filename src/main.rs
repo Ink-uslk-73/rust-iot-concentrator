@@ -1,23 +1,30 @@
 ﻿//! src/main.rs - entrypoint: CLI, wiring, shutdown.
 
+use std::sync::Arc;
 use clap::{Parser, Subcommand};
 use tracing::{info, warn};
 
+use rust_iot_concentrator::api::{router, AppState};
 use rust_iot_concentrator::core::bus::{Bus, BusMessage, BusPayload};
-use rust_iot_concentrator::core::dispatcher::{Dispatcher, DomainKind};
+use rust_iot_concentrator::core::dispatcher::Dispatcher;
 use rust_iot_concentrator::core::mode_switch::{Mode, ModeState, Priority};
 use rust_iot_concentrator::gateway::GatewayConfig;
 use rust_iot_concentrator::protocols;
+use rust_iot_concentrator::storage::pg;
 use rust_iot_concentrator::vm::hard::HardDomain;
 use rust_iot_concentrator::vm::life::LifeDomain;
-use rust_iot_concentrator::vm::soft::SoftDomain;
 use rust_iot_concentrator::vm::run_domain;
+use rust_iot_concentrator::vm::soft::SoftDomain;
 
 #[derive(Parser)]
 #[command(name = "rust-iot-concentrator", version, about = "Telecom concentrator v4.0")]
 struct Cli {
     #[arg(long, default_value = "config/concentrator.toml")]
     config: String,
+    #[arg(long, default_value = "postgres://concentrator@localhost:5432/concentrator")]
+    database_url: String,
+    #[arg(long, default_value = "0.0.0.0:8443")]
+    api_addr: String,
     #[command(subcommand)]
     command: Cmd,
 }
@@ -44,70 +51,55 @@ async fn main() -> anyhow::Result<()> {
     info!("=== Rust IoT Concentrator v4.0 ===");
 
     match cli.command {
-        Cmd::Run => run(cli.config).await?,
+        Cmd::Run => run(cli).await?,
         Cmd::Term => info!("terminal mode (standalone) - not implemented yet"),
     }
     Ok(())
 }
 
-async fn run(_config_path: String) -> anyhow::Result<()> {
+async fn run(cli: Cli) -> anyhow::Result<()> {
+    // 1. Bus
     let (bus, bus_rx) = Bus::new(256, 4096, 128, 128);
     info!("bus initialized");
 
+    // 2. Mode
     let mode = ModeState::with_mode(Mode::All);
     info!(mode = mode.get().name(), "initial mode");
 
+    // 3. Dispatcher + domains
     let (signals_rx, telemetry_rx, status_rx, diag_rx) = bus_rx.split();
-
     let (dispatcher, domain_receivers) = Dispatcher::new(mode.clone(), bus.clone(), 256);
-    info!("dispatcher created");
 
-    // Domain receivers: dispatcher has one commands channel. Route to HARD only;
-    // SOFT and LIFE get an empty dummy channel that never receives commands.
-    let (dummy_cmd_tx_soft, dummy_cmd_rx_soft) = tokio::sync::mpsc::channel(1);
-    let (dummy_cmd_tx_life, dummy_cmd_rx_life) = tokio::sync::mpsc::channel(1);
-    // Keep senders alive by leaking them (simple for skeleton).
-    std::mem::forget(dummy_cmd_tx_soft);
-    std::mem::forget(dummy_cmd_tx_life);
+    let (dummy_tx_soft, dummy_rx_soft) = tokio::sync::mpsc::channel(1);
+    let (dummy_tx_life, dummy_rx_life) = tokio::sync::mpsc::channel(1);
+    std::mem::forget(dummy_tx_soft);
+    std::mem::forget(dummy_tx_life);
 
     let hard_handle = tokio::spawn(run_domain(
-        HardDomain::default(),
-        domain_receivers.hard,
-        domain_receivers.commands,
-        bus.clone(),
-        std::time::Duration::from_millis(10),
+        HardDomain::default(), domain_receivers.hard, domain_receivers.commands,
+        bus.clone(), std::time::Duration::from_millis(10),
     ));
     let soft_handle = tokio::spawn(run_domain(
-        SoftDomain::default(),
-        domain_receivers.soft,
-        dummy_cmd_rx_soft,
-        bus.clone(),
-        std::time::Duration::from_millis(100),
+        SoftDomain::default(), domain_receivers.soft, dummy_rx_soft,
+        bus.clone(), std::time::Duration::from_millis(100),
     ));
     let life_handle = tokio::spawn(run_domain(
-        LifeDomain::default(),
-        domain_receivers.life,
-        dummy_cmd_rx_life,
-        bus.clone(),
-        std::time::Duration::from_millis(1000),
+        LifeDomain::default(), domain_receivers.life, dummy_rx_life,
+        bus.clone(), std::time::Duration::from_millis(1000),
     ));
-    info!("domains started");
-
     let dispatcher_handle = tokio::spawn(async move {
-        if let Err(e) = dispatcher
-            .run(telemetry_rx, signals_rx, status_rx, diag_rx)
-            .await
-        {
+        if let Err(e) = dispatcher.run(telemetry_rx, signals_rx, status_rx, diag_rx).await {
             warn!("dispatcher error: {}", e);
         }
     });
+    info!("domains + dispatcher started");
 
-    // Protocols: just list them, do not spawn (start takes &self, Box is not Clone).
-    let adapters = protocols::create_all();
-    for a in &adapters {
+    // 4. Protocols
+    for a in protocols::create_all() {
         info!(protocol = a.name(), priority = ?a.priority(), "adapter registered");
     }
 
+    // 5. Gateway config
     match GatewayConfig::load("config/gateway.toml") {
         Ok(cfg) => {
             if let Err(e) = cfg.validate() {
@@ -119,19 +111,68 @@ async fn run(_config_path: String) -> anyhow::Result<()> {
         Err(e) => warn!("gateway config load failed: {}", e),
     }
 
+    // 6. Storage (optional DB; if fails -> file fallback)
+    let pool = match pg::connect(&cli.database_url).await {
+        Ok(p) => {
+            info!("postgresql connected");
+            Some(p)
+        }
+        Err(e) => {
+            warn!(error = %e, "postgresql unavailable; running in file-fallback mode");
+            None
+        }
+    };
+
+    // 7. API server (REST + SSE)
+    let state: Arc<AppState> = Arc::new(AppState {
+        pool: pool.clone(),
+        root: std::path::PathBuf::from("."),
+    });
+    let app = router(state);
+    let listener = tokio::net::TcpListener::bind(&cli.api_addr).await?;
+    info!(addr = %cli.api_addr, "api server listening");
+    let api_handle = tokio::spawn(async move {
+        if let Err(e) = axum::serve(listener, app).await {
+            warn!("api server error: {}", e);
+        }
+    });
+
+    // 8. Periodic sync files -> DB (if DB back)
+    let sync_handle = if let Some(pool) = pool.clone() {
+        let pool = pool.clone();
+        Some(tokio::spawn(async move {
+            let mut tick = tokio::time::interval(std::time::Duration::from_secs(60));
+            loop {
+                tick.tick().await;
+                let root = std::path::Path::new(".");
+                match rust_iot_concentrator::storage::fallback::sync_baselines(&pool, root).await {
+                    Ok(n) if n > 0 => info!(count = n, "synced baselines"),
+                    Ok(_) => {}
+                    Err(e) => warn!("sync_baselines: {}", e),
+                }
+                match rust_iot_concentrator::storage::fallback::sync_events(&pool, root).await {
+                    Ok(n) if n > 0 => info!(count = n, "synced events"),
+                    Ok(_) => {}
+                    Err(e) => warn!("sync_events: {}", e),
+                }
+            }
+        }))
+    } else {
+        None
+    };
+
+    // 9. Ctrl+C
     tokio::signal::ctrl_c().await?;
     info!("shutdown signal received");
-
-    let _ = bus
-        .send(BusMessage::new("main", Priority::Hard, BusPayload::Shutdown))
-        .await;
-
+    let _ = bus.send(BusMessage::new("main", Priority::Hard, BusPayload::Shutdown)).await;
     tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+
+    api_handle.abort();
+    if let Some(h) = sync_handle { h.abort(); }
     dispatcher_handle.abort();
     hard_handle.abort();
     soft_handle.abort();
     life_handle.abort();
-    let _ = DomainKind::Hard;
     info!("shutdown complete");
     Ok(())
 }
