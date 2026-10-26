@@ -9,41 +9,68 @@
 
 ## P1 - высокая ценность
 
-- [x] **P1.1** Интеграция с AIG-502 по REST (client, drift, ATT&CK, poller).
-- [x] **P1.3** `cargo test` - все тесты проходят.
-- [ ] **P1.4** Обновление `tokio-modbus` до 0.17 (переиспользование `Context`).
-- [ ] **P1.5** TimescaleDB для телеметрии (через shell, после UI).
-  - **Скрипты:** `scripts/storage/install-timescaledb.sh`, `check-timescaledb.sh`, `migrate.sh`.
-  - **Миграция:** `migrations/002_timescale.sql`.
-  - **Порядок:** после P2.2 (Svelte) и P1.4 (`tokio-modbus 0.17`).
+- [x] **P1.1** AIG-502 REST (client, drift, ATT&CK, poller).
+- [x] **P1.3** `cargo test` - все тесты.
+- [ ] **P1.4** `tokio-modbus` 0.17 (переиспользование `Context`, 1 open на порт).
+- [ ] **P1.5** TimescaleDB (через shell, после UI).
+  - `scripts/storage/install-timescaledb.sh`, `check-timescaledb.sh`, `migrate.sh`.
+  - `migrations/002_timescale.sql`: hypertable + continuous aggregates + retention + compression.
+  - **Где:** STORAGE VM (node 1, cores 96-127).
   - **Осторожно:** `start_offset` continuous aggregate > `drop_after` retention.
-  - **Не трогать:** `baselines` (JSONB, сжатие не даёт выигрыша).
+- [ ] **P1.6** NUMA-aware `transport/`.
+  - shmem-ring на node producer (HARD -> node 0).
+  - vsock для cross-node (CORE <-> SOFT/LIFE/STORAGE), батчинг.
+  - TCP loopback - не использовать для HARD.
+  - **Зависит от:** P2.11-P2.12 (вынос в VM).
 
 ## P2 - средний приоритет
 
-- [ ] **P2.2** Дашборд Svelte (`ui/`).
-- [ ] **P2.11** Вынести SOFT в отдельную VM (cores 8-31, node 0).
-- [ ] **P2.12** Вынести LIFE в отдельную VM (cores 72-95, node 1).
-- [ ] **P2.13** Единая модель эксплуатации: все три домена - VM.
+- [ ] **P2.2** Дашборд Svelte (`ui/`). **Завтра.**
+- [ ] **P2.11** Вынести SOFT в VM (cores 72-95, node 1).
+  - `<vcpupin>` + `<numatune mode='strict' nodeset='1'>`.
+  - `MPOL_BIND`, shmem на node 1.
+  - **Зависит от:** `lspci -v` (подтвердить PLATE-B на node 1).
+- [ ] **P2.12** Вынести LIFE в VM (cores 8-31, node 0).
+  - `<vcpupin>` + `<numatune mode='strict' nodeset='0'>`.
+  - `MPOL_BIND`, shmem на node 0.
+  - **Зависит от:** `lspci -v` (подтвердить PLATE-C на node 0).
+- [ ] **P2.13** Единая модель эксплуатации: все домены - VM.
+  - **Ограничение:** делегирование ядер **только внутри ноды** (cross-node запрещён для HARD).
+  - `virsh setvcpus --live` (внутри ноды), cgroup v2.
+- [ ] **P2.14** NUMA health-check.
+  - `numastat -c qemu-kvm` -> `numa_foreign` должен быть 0.
+  - Alert (`DiagLevel::Critical`) при `numa_foreign > 0`.
+  - На housekeeping ядрах (32-47), **не** на HARD (0-7).
+  - `lspci -v` - **один раз** при развёртывании, результат в `config/numa.toml`.
+- [ ] **P2.15** HARD overflow (Вариант C).
+  - HARD standby (node 1) **не запущен** в норме.
+  - При перегрузке node 0 - включить standby, разделить устройства (`/dev/ttyM1`).
+  - При спаде - выключить standby.
+  - **Не миграция** - разделение устройств.
 
 ## P3 - низкий приоритет
 
-- [ ] **P3.8** `README.md` с quick start + `CHANGELOG.md`.
-- [ ] **P3.9** Профилирование NUMA.
-- [ ] **P3.10** `transport/` - shmem-ring для межплатного обмена.
+- [ ] **P3.8** `README.md` + `CHANGELOG.md`.
+- [ ] **P3.9** Профилирование NUMA (`numastat`, `perf`).
+- [ ] **P3.11** Интеграция с внешней SCADA (опционально).
+  - Концентратор отдаёт данные через API; SCADA читает.
+  - Не встраивать тяжёлую SCADA в LIFE.
 
 ## Отдельные репозитории
 
-- [x] **`rust-iot-concentrator-tablet`** - Flutter-клиент (Android 8.0+, Windows).
+- [x] **`rust-iot-concentrator-tablet`** - Flutter-клиент.
   - Репозиторий: https://github.com/Ink-uslk-73/rust-iot-concentrator-tablet
   - Статус: создан, README + TODO.
+
+## Инфраструктура (один раз при развёртывании)
+
+- [ ] **INF.1** `lspci -v` на сервере -> `NUMA node` для PLATE-A/B/C/HBA -> `config/numa.toml`.
+- [ ] **INF.2** `<vcpupin>` + `<numatune mode='strict'>` для каждой VM.
+- [ ] **INF.3** `isolcpus=0-7,64-71` в GRUB (HARD active/standby).
+- [ ] **INF.4** `emulatorpin` на housekeeping cores (32-47), **не** на HARD.
 
 ## Сделано
 
 - [x] Модуль 1-8 (структура, core, numa, dispatcher, gateway, hard_pool, monitoring, balancer, metrics, vm, terminal, protocols, main, systemd, scripts, docs, storage, api, tests).
-
-- [ ] **P3.11** Интеграция с внешней SCADA (опционально).
-  - **Когда:** только если заказчик потребует сертифицированную SCADA (ФСТЭК, реестр Минцифры).
-  - **Что:** концентратор отдаёт данные через `/api/v1/events` (REST) + `/api/v1/events/stream` (SSE); SCADA читает.
-  - **Чего НЕ делать:** не встраивать тяжёлую SCADA в LIFE-домен (JVM, GC, конкуренция с HARD/SOFT).
-  - **Роль LIFE:** Supervisory Level (Purdue 2-3) - HMI (Svelte), historian (TimescaleDB), алармы (ATT&CK).
+- [x] P0.5, P0.7, P1.1, P1.3.
+- [x] Архитектурные решения: микро-SCADA/HMI в LIFE, не монолит; TimescaleDB (не Cassandra); NUMA-раскладка (HARD active node 0, standby node 1, SOFT node 1, LIFE node 0, STORAGE node 1); HARD overflow (Вариант C).
