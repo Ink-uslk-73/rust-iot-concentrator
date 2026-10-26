@@ -1,0 +1,10 @@
+﻿{
+  "devices": [
+    {
+      "port_id": "0",
+      "registers": [
+        { "slave": 1, "start_addr": 0, "quantity": 10 }
+      ]
+    }
+  ]
+}

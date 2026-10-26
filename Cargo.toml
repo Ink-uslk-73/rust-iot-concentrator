@@ -1,14 +1,16 @@
-﻿[package]
+[package]
 name = "rust-iot-concentrator"
 version = "4.0.0"
 edition = "2021"
 rust-version = "1.75"
-description = "Телекоммуникационный концентратор v4.0"
+description = "Telecom concentrator v4.0"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
 tokio = { version = "1.40", features = ["full"] }
 tokio-util = { version = "0.7", features = ["codec"] }
+tokio-modbus = { version = "0.9", default-features = false, features = ["rtu"] }
+tokio-serial = "5"
 futures = "0.3"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
