@@ -1,0 +1,29 @@
+﻿[Unit]
+Description=Rust IoT Concentrator v4.0 (2x EPYC, 24x HDD)
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/rust-iot-concentrator run
+WorkingDirectory=/opt/rust-iot-concentrator
+Restart=on-failure
+RestartSec=2
+User=concentrator
+Group=concentrator
+
+# Core dump
+LimitCORE=infinity
+
+# RT for HARD (SCHED_FIFO 90)
+LimitRTPRIO=99
+LimitMEMLOCK=infinity
+
+# Nice
+Nice=-10
+
+# NUMA binding per-thread is done in code (numa.rs).
+# To bind whole process to node 0 (NOT recommended for 2x EPYC):
+# ExecStart=/usr/bin/numactl --membind=0 --cpunodebind=0 /usr/local/bin/rust-iot-concentrator run
+
+[Install]
+WantedBy=multi-user.target
