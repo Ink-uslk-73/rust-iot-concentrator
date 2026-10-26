@@ -12,6 +12,12 @@
 - [x] **P1.1** Интеграция с AIG-502 по REST (client, drift, ATT&CK, poller).
 - [x] **P1.3** `cargo test` - все тесты проходят.
 - [ ] **P1.4** Обновление `tokio-modbus` до 0.17 (переиспользование `Context`).
+- [ ] **P1.5** TimescaleDB для телеметрии (через shell, после UI).
+  - **Скрипты:** `scripts/storage/install-timescaledb.sh`, `check-timescaledb.sh`, `migrate.sh`.
+  - **Миграция:** `migrations/002_timescale.sql`.
+  - **Порядок:** после P2.2 (Svelte) и P1.4 (`tokio-modbus 0.17`).
+  - **Осторожно:** `start_offset` continuous aggregate > `drop_after` retention.
+  - **Не трогать:** `baselines` (JSONB, сжатие не даёт выигрыша).
 
 ## P2 - средний приоритет
 
@@ -35,3 +41,9 @@
 ## Сделано
 
 - [x] Модуль 1-8 (структура, core, numa, dispatcher, gateway, hard_pool, monitoring, balancer, metrics, vm, terminal, protocols, main, systemd, scripts, docs, storage, api, tests).
+
+- [ ] **P3.11** Интеграция с внешней SCADA (опционально).
+  - **Когда:** только если заказчик потребует сертифицированную SCADA (ФСТЭК, реестр Минцифры).
+  - **Что:** концентратор отдаёт данные через `/api/v1/events` (REST) + `/api/v1/events/stream` (SSE); SCADA читает.
+  - **Чего НЕ делать:** не встраивать тяжёлую SCADA в LIFE-домен (JVM, GC, конкуренция с HARD/SOFT).
+  - **Роль LIFE:** Supervisory Level (Purdue 2-3) - HMI (Svelte), historian (TimescaleDB), алармы (ATT&CK).
