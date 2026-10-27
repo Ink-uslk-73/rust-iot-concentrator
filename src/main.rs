@@ -110,10 +110,13 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
     };
 
     let state: Arc<AppState> = Arc::new(AppState {
-        pool: pool.clone(),
-        root: std::path::PathBuf::from("."),
-        metrics: metrics.clone(),
-    });
+    pool: pool.clone(),
+    root: std::path::PathBuf::from("."),
+    metrics: metrics.clone(),
+    mode: mode.clone(),
+    bus: bus.clone(),
+});
+
     let app = router(state);
     let listener = tokio::net::TcpListener::bind(&cli.api_addr).await?;
     info!(addr = %cli.api_addr, "api server listening");

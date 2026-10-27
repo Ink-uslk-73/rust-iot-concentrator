@@ -3,12 +3,15 @@
 pub mod baselines;
 pub mod events;
 pub mod metrics;
+pub mod mode;
 
 use axum::{routing::{get, post}, Router};
 use sqlx::PgPool;
 use std::path::PathBuf;
 use std::sync::Arc;
 
+use crate::core::bus::Bus;
+use crate::core::mode_switch::ModeState;
 use crate::metrics::OverheadMetrics;
 
 #[derive(Clone)]
@@ -16,6 +19,8 @@ pub struct AppState {
     pub pool: Option<PgPool>,
     pub root: PathBuf,
     pub metrics: Arc<OverheadMetrics>,
+    pub mode: ModeState,
+    pub bus: Bus,
 }
 
 pub type SharedState = Arc<AppState>;
@@ -32,5 +37,6 @@ pub fn router(state: SharedState) -> Router {
         .route("/api/v1/events/:event_id",                      get(events::get_one))
         .route("/api/v1/events/ack",                            post(events::ack))
         .route("/api/v1/metrics/overhead",                      get(metrics::overhead))
+        .route("/api/v1/mode",                                  get(mode::get_mode).post(mode::set_mode))
         .with_state(state)
 }
