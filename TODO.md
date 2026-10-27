@@ -12,7 +12,7 @@
 - [x] **P1.1** AIG-502 REST (client, drift, ATT&CK, poller).
 - [x] **P1.3** `cargo test` - все тесты.
 - [ ] **P1.4** `tokio-modbus` 0.17 (переиспользование `Context`, 1 open на порт).
-- [ ] **P1.5** TimescaleDB (через shell, после UI).
+- [x] **P1.5** TimescaleDB (через shell, после UI).
   - `scripts/storage/install-timescaledb.sh`, `check-timescaledb.sh`, `migrate.sh`.
   - `migrations/002_timescale.sql`: hypertable + continuous aggregates + retention + compression.
   - **Где:** STORAGE VM (node 1, cores 96-127).
