@@ -64,3 +64,17 @@
 
 This is why modern concentrators (Robustel, Advantech, BLIoT) are called
 **edge devices**, not just "protocol converters".
+
+## Cloud-Fog-Dew (edge computing model)
+
+| Layer | What | In project |
+|-------|------|------------|
+| **Cloud** | Centralized DC (backend: SCADA, cloud, billing) | api/ (REST/SSE) -> uplink |
+| **Fog** | Local cloud (edge-DC, enterprise DC) | **This concentrator** (PLATE-A/B -> PLATE-C) |
+| **Dew** | Direct end-to-end (Wi-Fi, BLE, ZigBee) | protocols/soft/ (Matter, Zigbee, Thread, BLE) |
+
+**Why it matters:**
+- Edge computing: functions move closer to usage (latency, bandwidth).
+- 5G MEC: edge in mobile networks (NFVI + middleware).
+- Concentrator = **Fog node** + **Dew connectivity** + **Cloud uplink**.
+- Traffic growth (big data, video, tactile internet, autonomous) -> transport boom.

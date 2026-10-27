@@ -142,3 +142,9 @@
 - [ ] **P4.8** Kafka/AMQP (enterprise integration).
 - [ ] **P4.9** Modbus RTU -> OPC UA Server.
 - [ ] **P4.10** User scripts (Lua/Python) for custom preprocessing.
+
+- [ ] **P3.15** Edge computing (Fog node) documentation.
+  - docs/glossary.md: Cloud-Fog-Dew table.
+  - docs/architecture.md: "Edge computing: Fog node".
+  - README.md: "Edge computing (Fog node)".
+  - **Why:** concentrator is Fog node + Dew connectivity + Cloud uplink, not just converter.

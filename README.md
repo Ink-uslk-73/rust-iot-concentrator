@@ -32,3 +32,12 @@ Matter, Zigbee, Thread, BLE. (DNP3, BACnet, LoRa, M-Bus, G3-PLC, S7 - on demand.
 
 **Above conversion**: normalization, aggregation, filtering, buffering (store & forward),
 user scripts (Lua/Python) - see docs/glossary.md.
+## Edge computing (Fog node)
+
+This concentrator is a **Fog node** (edge-DC), not just a protocol converter:
+
+- **Cloud**: backend (SCADA, cloud, billing) - via api/ (REST/SSE).
+- **Fog**: this device (PLATE-A + PLATE-B -> PLATE-C).
+- **Dew**: direct Matter/Zigbee/Thread/BLE (protocols/soft/).
+
+**5G MEC**: NFV principles (decomposition, orchestration). See docs/glossary.md.

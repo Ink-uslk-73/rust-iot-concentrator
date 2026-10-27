@@ -63,3 +63,13 @@ BACnet, PROFINET, CAN, LoRa, G3-PLC, M-Bus, proprietary PLC.
 **Uplink** (concentrator -> backend): MQTT, OPC UA, Modbus TCP, HTTP/REST, AMQP, Kafka.
 
 See docs/glossary.md for full table + conversion scenarios + "above conversion".
+
+## Edge computing: Fog node
+
+**This concentrator is a Fog node** (not just a protocol converter):
+
+- **Cloud** (backend): SCADA, cloud, billing - via api/ (REST/SSE).
+- **Fog** (this device): PLATE-A (industrial) + PLATE-B (smart home) -> PLATE-C (uplink).
+- **Dew** (direct): Matter, Zigbee, Thread, BLE - via protocols/soft/.
+
+**5G MEC**: NFV principles (decomposition, orchestration) - see docs/glossary.md.
