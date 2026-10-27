@@ -99,7 +99,7 @@
   - Запустить OpenModSim: RTU Slave на COM11, slave ID = 1, holding registers 0-10.
   - Проверить: концентратор открывает COM10, читает регистры из OpenModSim.
 
-- [ ] **P2.16c** UI-переключатель production/emulation (Dashboard).
+- [x] **P2.16c** UI-переключатель production/emulation (Dashboard).
   - ConfigMode.svelte: селект production/emulation + POST /api/v1/config/mode.
   - Показывает текущий режим (GET /api/v1/config/mode) и config_path/registers_path.
   - **Порядок:** сразу после P2.16b (сейчас).
@@ -111,3 +111,13 @@
   - OpenModSim: RTU Slave on COM11, 9600 8N1, slave ID=1, holding registers 0..10.
   - Проверка: modbus rtu read в логах концентратора.
   - **Не автоматизируется** (GUI, драйвер).
+
+- [x] **P2.17** Self-telemetry (CPU, mem, disks, NUMA, temps).
+  - sysinfo crate (кроссплатформенный).
+  - src/metrics/self_telemetry.rs: SelfTelemetry::publish(registry).
+  - Префикс self.* (не смешивать с внешней телеметрией).
+  - Linux (AIG-502): real NUMA/temps from /sys.
+  - Windows (emulation): NUMA/temps = zeros (sysinfo for CPU/mem/disks).
+  - API: GET /api/v1/metrics/self.
+  - UI: SelfMetrics.svelte (Dashboard).
+  - **Сделано:** CPU avg 31.3%, Mem 76.6% (Windows), NUMA/temp = 0.
