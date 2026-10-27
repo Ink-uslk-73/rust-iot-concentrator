@@ -12,6 +12,7 @@ use std::sync::Arc;
 
 use crate::core::bus::Bus;
 use crate::core::mode_switch::ModeState;
+use crate::gateway::ui;
 use crate::metrics::OverheadMetrics;
 
 #[derive(Clone)]
@@ -38,5 +39,6 @@ pub fn router(state: SharedState) -> Router {
         .route("/api/v1/events/ack",                            post(events::ack))
         .route("/api/v1/metrics/overhead",                      get(metrics::overhead))
         .route("/api/v1/mode",                                  get(mode::get_mode).post(mode::set_mode))
+        .fallback(ui::serve)
         .with_state(state)
 }

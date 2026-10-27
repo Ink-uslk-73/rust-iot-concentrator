@@ -1,5 +1,6 @@
-﻿//! src/gateway/mod.rs - TLS gateway for tablet (mTLS + axum).
+//! src/gateway/mod.rs - TLS gateway for tablet (mTLS + axum).
 pub mod tls;
+pub mod ui;
 
 use std::path::PathBuf;
 use serde::Deserialize;
