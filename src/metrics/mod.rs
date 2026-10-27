@@ -5,6 +5,7 @@ pub mod collector_mem;
 pub mod collector_net;
 pub mod overhead;
 pub mod registry;
+pub mod self_telemetry;
 pub mod snapshot;
 pub mod statistics;
 

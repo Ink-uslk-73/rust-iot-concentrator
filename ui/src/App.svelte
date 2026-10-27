@@ -3,6 +3,7 @@
   import Dashboard from "./components/Dashboard.svelte";
   import ModeSwitch from "./components/ModeSwitch.svelte";
   import ConfigMode from "./components/ConfigMode.svelte";
+  import SelfMetrics from "./components/SelfMetrics.svelte";
   import Telemetry from "./components/Telemetry.svelte";
   import Events from "./components/Events.svelte";
   import Terminal from "./components/Terminal.svelte";
@@ -43,6 +44,7 @@
         <Dashboard />
         <ModeSwitch />
         <ConfigMode />
+        <SelfMetrics />
       {:else if page === "telemetry"}
         <Telemetry />
       {:else if page === "events"}

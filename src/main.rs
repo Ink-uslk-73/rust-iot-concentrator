@@ -60,9 +60,18 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
         .map_err(|e| anyhow::anyhow!("config: {}", e))?;
     let (mc, mr) = concentrator_cfg.modbus.current_paths();
     info!(mode = %concentrator_cfg.modbus.mode, config = %mc, registers = %mr, "modbus paths");
-
-    let metrics = Arc::new(OverheadMetrics::new());
-    let (bus, bus_rx) = Bus::new(256, 4096, 128, 128, metrics.clone());
+let metrics = Arc::new(OverheadMetrics::new());
+let registry = Arc::new(rust_iot_concentrator::metrics::registry::Registry::new());
+let mut self_tel = rust_iot_concentrator::metrics::self_telemetry::SelfTelemetry::new();
+let registry_bg = registry.clone();
+tokio::spawn(async move {
+    let mut tick = tokio::time::interval(std::time::Duration::from_secs(2));
+    loop {
+        tick.tick().await;
+        self_tel.publish(&registry_bg);
+    }
+});
+let (bus, bus_rx) = Bus::new(256, 4096, 128, 128, metrics.clone());
     info!("bus initialized");
 
     let mode = ModeState::with_mode(Mode::All);
@@ -117,12 +126,13 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
     };
 
     let state: Arc<AppState> = Arc::new(AppState {
-        pool: pool.clone(),
-        root: std::path::PathBuf::from("."),
-        metrics: metrics.clone(),
-        mode: mode.clone(),
-        bus: bus.clone(),
-        config: cfg_arc.clone(),
+    pool: pool.clone(),
+    root: std::path::PathBuf::from("."),
+    metrics: metrics.clone(),
+    registry: registry.clone(),   // <-- добавить
+    mode: mode.clone(),
+    bus: bus.clone(),
+    config: cfg_arc.clone(),
     });
     let app = router(state);
     let listener = tokio::net::TcpListener::bind(&cli.api_addr).await?;

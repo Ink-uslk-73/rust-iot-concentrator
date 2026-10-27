@@ -44,6 +44,7 @@ thiserror = "1.0"
 uuid = { version = "1.10", features = ["v4", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }
 libc = "0.2"
+sysinfo = "0.32"
 
 [features]
 default = []
@@ -60,3 +61,4 @@ codegen-units = 1
 strip = false
 panic = "unwind"
 debug = true
+
