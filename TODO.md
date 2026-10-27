@@ -35,7 +35,7 @@
 
 ## P2 - средний приоритет
 
-- [ ] **P2.2** Дашборд Svelte (`ui/`). **Завтра.**
+- [x] **P2.2** Дашборд Svelte (`ui/`): Dashboard, ModeSwitch, Telemetry, Events, Terminal, Help (modal, tooltips, autocomplete, thresholds). Встроен в бинарник (`rust-embed`).
 - [ ] **P2.11** Вынести SOFT в VM (cores 72-95, node 1).
   - `<vcpupin>` + `<numatune mode='strict' nodeset='1'>`.
   - `MPOL_BIND`, shmem на node 1.
