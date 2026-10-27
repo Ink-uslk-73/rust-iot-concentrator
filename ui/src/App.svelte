@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import Dashboard from "./components/Dashboard.svelte";
   import ModeSwitch from "./components/ModeSwitch.svelte";
+  import ConfigMode from "./components/ConfigMode.svelte";
   import Telemetry from "./components/Telemetry.svelte";
   import Events from "./components/Events.svelte";
   import Terminal from "./components/Terminal.svelte";
@@ -41,6 +42,7 @@
       {#if page === "dashboard"}
         <Dashboard />
         <ModeSwitch />
+        <ConfigMode />
       {:else if page === "telemetry"}
         <Telemetry />
       {:else if page === "events"}
