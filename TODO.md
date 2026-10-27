@@ -121,3 +121,7 @@
   - API: GET /api/v1/metrics/self.
   - UI: SelfMetrics.svelte (Dashboard).
   - **Сделано:** CPU avg 31.3%, Mem 76.6% (Windows), NUMA/temp = 0.
+
+- [ ] **P3.12** Терминология: Data Concentrator vs Ethernet hub vs Communicator vs Protocol Gateway.
+  - docs/glossary.md (создан).
+  - README.md, HARDWARE.md, docs/architecture.md (сноска "не Ethernet hub").

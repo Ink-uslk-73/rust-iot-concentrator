@@ -48,3 +48,9 @@ Degradation: All -> HardSoft -> HardOnly. HARD never degrades.
 ```
 cargo test
 ```
+
+## Terminology
+
+**Data Concentrator** (this project): aggregates N field devices -> 1 uplink.
+**Not** Ethernet hub (L1, obsolete). **Not** Protocol Gateway (translation).
+**Not** Communicator (connectivity). See docs/glossary.md.

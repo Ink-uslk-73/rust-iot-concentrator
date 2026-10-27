@@ -68,3 +68,7 @@ GRUB_CMDLINE_LINUX="isolcpus=0-7,64-71 nohz_full=0-7,64-71 rcu_nocbs=0-7,64-71"
 | CORE | 0 | 32-47 | SCHED_OTHER | node 0 |
 | LIFE | 1 | 64-95 | SCHED_OTHER | node 1 |
 | STORAGE | 1 | 96-127 | SCHED_OTHER | node 1 |
+
+> **Терминология:** "Концентратор" здесь - **Data Concentrator** (IIoT),
+> агрегатор данных с N устройств -> 1 uplink. Не Ethernet hub (L1, устаревший).
+> См. docs/glossary.md.
