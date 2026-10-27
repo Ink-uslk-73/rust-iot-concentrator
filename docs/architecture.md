@@ -54,3 +54,12 @@ cargo test
 **Data Concentrator** (this project): aggregates N field devices -> 1 uplink.
 **Not** Ethernet hub (L1, obsolete). **Not** Protocol Gateway (translation).
 **Not** Communicator (connectivity). See docs/glossary.md.
+
+## Protocols: downlink/uplink
+
+**Downlink** (field -> concentrator): Modbus RTU, Modbus TCP, DNP3, IEC 60870-5-104,
+BACnet, PROFINET, CAN, LoRa, G3-PLC, M-Bus, proprietary PLC.
+
+**Uplink** (concentrator -> backend): MQTT, OPC UA, Modbus TCP, HTTP/REST, AMQP, Kafka.
+
+See docs/glossary.md for full table + conversion scenarios + "above conversion".

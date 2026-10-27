@@ -125,3 +125,20 @@
 - [ ] **P3.12** Терминология: Data Concentrator vs Ethernet hub vs Communicator vs Protocol Gateway.
   - docs/glossary.md (создан).
   - README.md, HARDWARE.md, docs/architecture.md (сноска "не Ethernet hub").
+
+- [ ] **P3.13** Modbus TCP uplink (direct SCADA/HMI).
+  - protocols/hard/modbus_tcp.rs: Modbus TCP Server (slave) on port 502.
+  - Scenario: Modbus RTU -> Modbus TCP.
+
+## P4 - on demand (client request)
+
+- [ ] **P4.1** DNP3 (RS-485/Ethernet) -> OPC UA/MQTT.
+- [ ] **P4.2** IEC 60870-5-104 (substation remote control).
+- [ ] **P4.3** BACnet MSTP/IP -> Modbus TCP.
+- [ ] **P4.4** LoRa/wM-Bus/Sigfox -> MQTT.
+- [ ] **P4.5** G3-PLC/PRIME -> MQTT/IEC 60870.
+- [ ] **P4.6** M-Bus (gas/water meters).
+- [ ] **P4.7** Proprietary PLC (Siemens S7, Schneider, Mitsubishi, Omron) -> OPC UA/MQTT.
+- [ ] **P4.8** Kafka/AMQP (enterprise integration).
+- [ ] **P4.9** Modbus RTU -> OPC UA Server.
+- [ ] **P4.10** User scripts (Lua/Python) for custom preprocessing.

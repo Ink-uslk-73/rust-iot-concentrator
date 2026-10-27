@@ -23,3 +23,12 @@
 - **Communicator** (связность: сотовый роутер, VPN).
 
 См. docs/glossary.md.
+## Protocols
+
+**Downlink** (field -> concentrator): Modbus RTU, OPC UA, PROFINET, EtherNet/IP, CAN,
+Matter, Zigbee, Thread, BLE. (DNP3, BACnet, LoRa, M-Bus, G3-PLC, S7 - on demand.)
+
+**Uplink** (concentrator -> backend): MQTT, HTTP/REST, OPC UA, Modbus TCP.
+
+**Above conversion**: normalization, aggregation, filtering, buffering (store & forward),
+user scripts (Lua/Python) - see docs/glossary.md.
