@@ -6,6 +6,7 @@
   import Events from "./components/Events.svelte";
   import Terminal from "./components/Terminal.svelte";
   import Help from "./components/Help.svelte";
+  import Clock from "./components/Clock.svelte";
 
   let page: "dashboard" | "telemetry" | "events" | "terminal" | "help" = "dashboard";
   let connected = false;
@@ -30,20 +31,27 @@
     </div>
   </aside>
 
-  <main class="main">
-    {#if page === "dashboard"}
-      <Dashboard />
-      <ModeSwitch />
-    {:else if page === "telemetry"}
-      <Telemetry />
-    {:else if page === "events"}
-      <Events />
-    {:else if page === "terminal"}
-      <Terminal />
-    {:else if page === "help"}
-      <Help />
-    {/if}
-  </main>
+  <div class="content">
+    <header class="topbar">
+      <div class="topbar-left">{page}</div>
+      <div class="topbar-right"><Clock /></div>
+    </header>
+
+    <main class="main">
+      {#if page === "dashboard"}
+        <Dashboard />
+        <ModeSwitch />
+      {:else if page === "telemetry"}
+        <Telemetry />
+      {:else if page === "events"}
+        <Events />
+      {:else if page === "terminal"}
+        <Terminal />
+      {:else if page === "help"}
+        <Help />
+      {/if}
+    </main>
+  </div>
 </div>
 
 <style>
@@ -56,5 +64,9 @@
   .status { margin-top: auto; font-size: 0.85rem; padding: 0.5rem; border-radius: 4px; text-align: center; }
   .status.ok { background: #14532d; }
   .status.err { background: #7f1d1d; }
+  .content { flex: 1; display: flex; flex-direction: column; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 1rem; background: #1e293b; border-bottom: 1px solid #334155; }
+  .topbar-left { font-size: 0.9rem; color: #94a3b8; text-transform: capitalize; }
+  .topbar-right { display: flex; justify-content: flex-end; }
   .main { flex: 1; padding: 1rem; overflow: auto; }
 </style>
