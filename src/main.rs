@@ -1,4 +1,4 @@
-﻿//! src/main.rs - entrypoint: CLI, wiring, shutdown.
+//! src/main.rs - entrypoint: CLI, wiring, shutdown.
 
 use std::sync::Arc;
 use clap::{Parser, Subcommand};
@@ -9,6 +9,7 @@ use rust_iot_concentrator::core::bus::{Bus, BusMessage, BusPayload};
 use rust_iot_concentrator::core::dispatcher::Dispatcher;
 use rust_iot_concentrator::core::mode_switch::{Mode, ModeState, Priority};
 use rust_iot_concentrator::gateway::GatewayConfig;
+use rust_iot_concentrator::metrics::OverheadMetrics;
 use rust_iot_concentrator::protocols;
 use rust_iot_concentrator::storage::pg;
 use rust_iot_concentrator::vm::hard::HardDomain;
@@ -30,10 +31,7 @@ struct Cli {
 }
 
 #[derive(Subcommand)]
-enum Cmd {
-    Run,
-    Term,
-}
+enum Cmd { Run, Term }
 
 fn init_logging() {
     let _ = tracing_subscriber::fmt()
@@ -49,7 +47,6 @@ async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
     init_logging();
     info!("=== Rust IoT Concentrator v4.0 ===");
-
     match cli.command {
         Cmd::Run => run(cli).await?,
         Cmd::Term => info!("terminal mode (standalone) - not implemented yet"),
@@ -58,15 +55,13 @@ async fn main() -> anyhow::Result<()> {
 }
 
 async fn run(cli: Cli) -> anyhow::Result<()> {
-    // 1. Bus
-    let (bus, bus_rx) = Bus::new(256, 4096, 128, 128);
+    let metrics = Arc::new(OverheadMetrics::new());
+    let (bus, bus_rx) = Bus::new(256, 4096, 128, 128, metrics.clone());
     info!("bus initialized");
 
-    // 2. Mode
     let mode = ModeState::with_mode(Mode::All);
     info!(mode = mode.get().name(), "initial mode");
 
-    // 3. Dispatcher + domains
     let (signals_rx, telemetry_rx, status_rx, diag_rx) = bus_rx.split();
     let (dispatcher, domain_receivers) = Dispatcher::new(mode.clone(), bus.clone(), 256);
 
@@ -94,12 +89,10 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
     });
     info!("domains + dispatcher started");
 
-    // 4. Protocols
     for a in protocols::create_all() {
         info!(protocol = a.name(), priority = ?a.priority(), "adapter registered");
     }
 
-    // 5. Gateway config
     match GatewayConfig::load("config/gateway.toml") {
         Ok(cfg) => {
             if let Err(e) = cfg.validate() {
@@ -111,22 +104,15 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
         Err(e) => warn!("gateway config load failed: {}", e),
     }
 
-    // 6. Storage (optional DB; if fails -> file fallback)
     let pool = match pg::connect(&cli.database_url).await {
-        Ok(p) => {
-            info!("postgresql connected");
-            Some(p)
-        }
-        Err(e) => {
-            warn!(error = %e, "postgresql unavailable; running in file-fallback mode");
-            None
-        }
+        Ok(p) => { info!("postgresql connected"); Some(p) }
+        Err(e) => { warn!(error = %e, "postgresql unavailable; running in file-fallback mode"); None }
     };
 
-    // 7. API server (REST + SSE)
     let state: Arc<AppState> = Arc::new(AppState {
         pool: pool.clone(),
         root: std::path::PathBuf::from("."),
+        metrics: metrics.clone(),
     });
     let app = router(state);
     let listener = tokio::net::TcpListener::bind(&cli.api_addr).await?;
@@ -137,7 +123,6 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
         }
     });
 
-    // 8. Periodic sync files -> DB (if DB back)
     let sync_handle = if let Some(pool) = pool.clone() {
         let pool = pool.clone();
         Some(tokio::spawn(async move {
@@ -157,11 +142,8 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
                 }
             }
         }))
-    } else {
-        None
-    };
+    } else { None };
 
-    // 9. Ctrl+C
     tokio::signal::ctrl_c().await?;
     info!("shutdown signal received");
     let _ = bus.send(BusMessage::new("main", Priority::Hard, BusPayload::Shutdown)).await;

@@ -1,9 +1,6 @@
 //! src/protocols/hard/modbus.rs - Modbus RTU poller for AIG-502.
-//!
-//! P0.5: one SerialStream per port (grouped), not per device.
-//! P0.7: poll_ms from registers.json (default 50 ms).
 
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use tokio::time;
 use tokio_modbus::prelude::*;
 use tokio_serial::SerialStream;
@@ -70,7 +67,6 @@ impl ProtocolAdapter for ModbusAdapter {
                         continue;
                     };
 
-                    // P0.5: one stream per port, iterate slaves on same stream.
                     for group in &cfg.ports {
                         if let Err(e) = poll_port(group, &publish).await {
                             tracing::warn!(port = %group.port, "port: {}", e);
@@ -112,7 +108,9 @@ async fn poll_port(group: &PortGroup, publish: &PublishFn) -> Result<(), String>
         match ctx.read_holding_registers(dev.start_addr, dev.quantity).await {
             Ok(data) => {
                 for (i, &val) in data.iter().enumerate() {
+                    let t = Instant::now();
                     publish(Priority::Hard, val as f64, "reg");
+                    let _ = t;
                     tracing::debug!(
                         slave = dev.slave,
                         reg = dev.start_addr + i as u16,

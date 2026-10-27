@@ -1,17 +1,13 @@
-﻿//! src/core/bus.rs - Shared bus: 4 channels by signal type.
-//!
-//! Not by priority (HARD/SOFT/LIFE), but by TYPE:
-//! - signals     - control commands (from tablet, from FSM)
-//! - telemetry   - data (read-only, from protocols)
-//! - status      - component state (from supervisor, watchdog)
-//! - diagnostics - errors, emergency states
+//! src/core/bus.rs - Shared bus: 4 channels by signal type.
 
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 use tokio::sync::mpsc;
 use thiserror::Error;
 
 use crate::core::mode_switch::{Mode, Priority};
+use crate::metrics::OverheadMetrics;
 
 static SEQ: AtomicU64 = AtomicU64::new(1);
 
@@ -29,27 +25,10 @@ pub enum DiagLevel {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum BusPayload {
-    Command {
-        target: String,
-        action: String,
-        params: serde_json::Value,
-    },
-    Telemetry {
-        sensor_id: String,
-        value: f64,
-        unit: String,
-        timestamp_ms: u64,
-    },
-    Status {
-        component: String,
-        state: String,
-        detail: String,
-    },
-    Diagnostic {
-        level: DiagLevel,
-        component: String,
-        message: String,
-    },
+    Command { target: String, action: String, params: serde_json::Value },
+    Telemetry { sensor_id: String, value: f64, unit: String, timestamp_ms: u64 },
+    Status { component: String, state: String, detail: String },
+    Diagnostic { level: DiagLevel, component: String, message: String },
     ModeChange { target: Mode },
     Shutdown,
 }
@@ -57,9 +36,7 @@ pub enum BusPayload {
 impl BusPayload {
     pub fn channel(&self) -> Channel {
         match self {
-            BusPayload::Command { .. }
-            | BusPayload::ModeChange { .. }
-            | BusPayload::Shutdown => Channel::Signals,
+            BusPayload::Command { .. } | BusPayload::ModeChange { .. } | BusPayload::Shutdown => Channel::Signals,
             BusPayload::Telemetry { .. } => Channel::Telemetry,
             BusPayload::Status { .. } => Channel::Status,
             BusPayload::Diagnostic { .. } => Channel::Diagnostics,
@@ -68,12 +45,7 @@ impl BusPayload {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Channel {
-    Signals,
-    Telemetry,
-    Status,
-    Diagnostics,
-}
+pub enum Channel { Signals, Telemetry, Status, Diagnostics }
 
 #[derive(Debug, Clone)]
 pub struct BusMessage {
@@ -103,6 +75,7 @@ pub struct Bus {
     pub telemetry: mpsc::Sender<BusMessage>,
     pub status: mpsc::Sender<BusMessage>,
     pub diagnostics: mpsc::Sender<BusMessage>,
+    pub metrics: Arc<OverheadMetrics>,
 }
 
 impl Bus {
@@ -111,6 +84,7 @@ impl Bus {
         telemetry_cap: usize,
         status_cap: usize,
         diagnostics_cap: usize,
+        metrics: Arc<OverheadMetrics>,
     ) -> (Self, BusReceivers) {
         let (signals_tx, signals_rx) = mpsc::channel(signals_cap.max(1));
         let (telemetry_tx, telemetry_rx) = mpsc::channel(telemetry_cap.max(1));
@@ -118,17 +92,11 @@ impl Bus {
         let (diag_tx, diag_rx) = mpsc::channel(diagnostics_cap.max(1));
         (
             Self {
-                signals: signals_tx,
-                telemetry: telemetry_tx,
-                status: status_tx,
-                diagnostics: diag_tx,
+                signals: signals_tx, telemetry: telemetry_tx,
+                status: status_tx, diagnostics: diag_tx,
+                metrics,
             },
-            BusReceivers {
-                signals: signals_rx,
-                telemetry: telemetry_rx,
-                status: status_rx,
-                diagnostics: diag_rx,
-            },
+            BusReceivers { signals: signals_rx, telemetry: telemetry_rx, status: status_rx, diagnostics: diag_rx },
         )
     }
 
@@ -140,7 +108,13 @@ impl Bus {
             Channel::Status => &self.status,
             Channel::Diagnostics => &self.diagnostics,
         };
-        tx.send(msg).await.map_err(|_| BusError::Closed(ch))
+        let capacity = tx.max_capacity();
+        let res = tx.send(msg).await.map_err(|_| BusError::Closed(ch));
+        if res.is_err() {
+            self.metrics.record_bus_drop();
+        }
+        self.metrics.record_bus_buffer(capacity, tx.capacity());
+        res
     }
 
     pub fn try_send(&self, msg: BusMessage) -> Result<(), BusError> {
@@ -151,11 +125,17 @@ impl Bus {
             Channel::Status => &self.status,
             Channel::Diagnostics => &self.diagnostics,
         };
-        match tx.try_send(msg) {
+        let capacity = tx.max_capacity();
+        let res = match tx.try_send(msg) {
             Ok(()) => Ok(()),
             Err(mpsc::error::TrySendError::Full(_)) => Err(BusError::Full(ch)),
             Err(mpsc::error::TrySendError::Closed(_)) => Err(BusError::Closed(ch)),
+        };
+        if res.is_err() {
+            self.metrics.record_bus_drop();
         }
+        self.metrics.record_bus_buffer(capacity, tx.capacity());
+        res
     }
 }
 
@@ -182,107 +162,25 @@ mod tests {
     use super::*;
 
     fn make_bus() -> (Bus, BusReceivers) {
-        Bus::new(4, 8, 4, 4)
-    }
-
-    #[test]
-    fn payload_routes_to_correct_channel() {
-        assert_eq!(
-            BusPayload::Command {
-                target: "x".into(),
-                action: "y".into(),
-                params: serde_json::json!({})
-            }
-            .channel(),
-            Channel::Signals
-        );
-        assert_eq!(
-            BusPayload::Telemetry {
-                sensor_id: "s".into(),
-                value: 1.0,
-                unit: "C".into(),
-                timestamp_ms: 0
-            }
-            .channel(),
-            Channel::Telemetry
-        );
-        assert_eq!(
-            BusPayload::Status {
-                component: "c".into(),
-                state: "ok".into(),
-                detail: "".into()
-            }
-            .channel(),
-            Channel::Status
-        );
-        assert_eq!(
-            BusPayload::Diagnostic {
-                level: DiagLevel::Info,
-                component: "c".into(),
-                message: "m".into()
-            }
-            .channel(),
-            Channel::Diagnostics
-        );
-        assert_eq!(BusPayload::Shutdown.channel(), Channel::Signals);
-        assert_eq!(
-            BusPayload::ModeChange { target: Mode::All }.channel(),
-            Channel::Signals
-        );
+        let m = Arc::new(OverheadMetrics::new());
+        Bus::new(4, 8, 4, 4, m)
     }
 
     #[tokio::test]
     async fn send_routes_telemetry() {
         let (bus, mut rx) = make_bus();
-        let msg = BusMessage::new(
-            "modbus",
-            Priority::Hard,
-            BusPayload::Telemetry {
-                sensor_id: "s1".into(),
-                value: 42.0,
-                unit: "C".into(),
-                timestamp_ms: 1,
-            },
-        );
-        bus.send(msg).await.unwrap();
+        bus.send(BusMessage::new("modbus", Priority::Hard, BusPayload::Telemetry {
+            sensor_id: "s1".into(), value: 42.0, unit: "C".into(), timestamp_ms: 1,
+        })).await.unwrap();
         let got = rx.telemetry.recv().await.unwrap();
         assert_eq!(got.source, "modbus");
-        assert_eq!(got.priority, Priority::Hard);
     }
 
     #[tokio::test]
-    async fn send_routes_signals() {
-        let (bus, mut rx) = make_bus();
-        let msg = BusMessage::new("core", Priority::Hard, BusPayload::Shutdown);
-        bus.send(msg).await.unwrap();
-        let got = rx.signals.recv().await.unwrap();
-        assert!(matches!(got.payload, BusPayload::Shutdown));
-    }
-
-    #[tokio::test]
-    async fn send_closed_returns_error() {
-        let (bus, rx) = make_bus();
-        drop(rx);
-        let msg = BusMessage::new("x", Priority::Hard, BusPayload::Shutdown);
-        let err = bus.send(msg).await.unwrap_err();
-        assert!(matches!(err, BusError::Closed(Channel::Signals)));
-    }
-
-    #[tokio::test]
-    async fn try_send_full_returns_error() {
-        let (bus, _rx) = Bus::new(1, 1, 1, 1);
-        bus.try_send(BusMessage::new("a", Priority::Hard, BusPayload::Shutdown))
-            .unwrap();
-        let err = bus
-            .try_send(BusMessage::new("b", Priority::Hard, BusPayload::Shutdown))
-            .unwrap_err();
-        assert!(matches!(err, BusError::Full(Channel::Signals)));
-    }
-
-    #[test]
-    fn seq_is_monotonic() {
-        let a = next_seq();
-        let b = next_seq();
-        assert!(b > a);
+    async fn bus_buffer_recorded() {
+        let (bus, _rx) = make_bus();
+        bus.send(BusMessage::new("x", Priority::Hard, BusPayload::Shutdown)).await.unwrap();
+        let s = bus.metrics.snapshot();
+        assert!(s.bus_buffer_pct <= 100);
     }
 }

@@ -1,17 +1,21 @@
-﻿//! src/api/mod.rs - REST + SSE for tablet and SOC.
+//! src/api/mod.rs - REST + SSE for tablet and SOC.
 
 pub mod baselines;
 pub mod events;
+pub mod metrics;
 
 use axum::{routing::{get, post}, Router};
 use sqlx::PgPool;
 use std::path::PathBuf;
 use std::sync::Arc;
 
+use crate::metrics::OverheadMetrics;
+
 #[derive(Clone)]
 pub struct AppState {
     pub pool: Option<PgPool>,
     pub root: PathBuf,
+    pub metrics: Arc<OverheadMetrics>,
 }
 
 pub type SharedState = Arc<AppState>;
@@ -27,5 +31,6 @@ pub fn router(state: SharedState) -> Router {
         .route("/api/v1/events/stream",                         get(events::stream))
         .route("/api/v1/events/:event_id",                      get(events::get_one))
         .route("/api/v1/events/ack",                            post(events::ack))
+        .route("/api/v1/metrics/overhead",                      get(metrics::overhead))
         .with_state(state)
 }

@@ -22,6 +22,16 @@
   - vsock для cross-node (CORE <-> SOFT/LIFE/STORAGE), батчинг.
   - TCP loopback - не использовать для HARD.
   - **Зависит от:** P2.11-P2.12 (вынос в VM).
+  - [ ] **P1.7** Overhead metrics (added latency, throughput, jitter, buffer).
+  - `src/metrics/overhead.rs`: `OverheadMetrics` (atomic counters).
+  - HARD: < 1 мс (`modbus.rs` → `bus.send`).
+  - API: < 1 мс (`api/` handler).
+  - SSE: jitter < 10 мс.
+  - Bus buffer: < 70% (warning), > 90% (critical).
+  - `GET /api/v1/metrics/overhead` (JSON).
+  - Alert в diagnostics при превышении порогов.
+  - **Зависит от:** P2.2 (UI) — чтобы отображать метрики.
+  - **До** P2.11–P2.12 (VM) — чтобы знать overhead до выноса.
 
 ## P2 - средний приоритет
 
