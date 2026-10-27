@@ -98,3 +98,16 @@
   - Создать пару COM10 <-> COM11 (через setupg.exe или CLI).
   - Запустить OpenModSim: RTU Slave на COM11, slave ID = 1, holding registers 0-10.
   - Проверить: концентратор открывает COM10, читает регистры из OpenModSim.
+
+- [ ] **P2.16c** UI-переключатель production/emulation (Dashboard).
+  - ConfigMode.svelte: селект production/emulation + POST /api/v1/config/mode.
+  - Показывает текущий режим (GET /api/v1/config/mode) и config_path/registers_path.
+  - **Порядок:** сразу после P2.16b (сейчас).
+  - **Зависит от:** P2.16b (API работает).
+
+- [ ] **P2.16d** Установка com0com + OpenModSim (ручной шаг, 15-20 мин).
+  - **Порядок:** после P2.16c (сначала UI-переключатель).
+  - com0com: bcdedit TESTSIGNING ON -> reboot -> setupg.exe -> pair COM10<->COM11.
+  - OpenModSim: RTU Slave on COM11, 9600 8N1, slave ID=1, holding registers 0..10.
+  - Проверка: modbus rtu read в логах концентратора.
+  - **Не автоматизируется** (GUI, драйвер).
