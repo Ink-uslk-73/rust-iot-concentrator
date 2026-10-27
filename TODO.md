@@ -84,3 +84,17 @@
 - [x] Модуль 1-8 (структура, core, numa, dispatcher, gateway, hard_pool, monitoring, balancer, metrics, vm, terminal, protocols, main, systemd, scripts, docs, storage, api, tests).
 - [x] P0.5, P0.7, P1.1, P1.3.
 - [x] Архитектурные решения: микро-SCADA/HMI в LIFE, не монолит; TimescaleDB (не Cassandra); NUMA-раскладка (HARD active node 0, standby node 1, SOFT node 1, LIFE node 0, STORAGE node 1); HARD overflow (Вариант C).
+
+- [ ] **P2.16** Эмуляция AIG-502 для отладки (без реального железа).
+  - **Слой 1 (Modbus RTU):** com0com (пара COM10 <-> COM11) + OpenModSim (Slave на COM11, slave ID = 1, holding registers 0-10).
+  - **Слой 2 (конфигурация):** локальные config.json (device: "COM10") + egisters.json в emulation/aig-502/.
+  - **Слой 3 (HTTP API AIG, опционально):** mock HTTP-сервер для ig/client.rs (drift, ATT&CK).
+  - **Структура:** emulation/aig-502/{config.json, registers.json, README.md}.
+  - **Инструменты:** scripts/emulation/setup-com0com.ps1, scripts/emulation/check-emulation.ps1.
+  - **Зависит от:** P0.7 (config.json/registers.json парсинг уже есть).
+
+- [ ] **INF.5** Настройка эмуляции Modbus RTU (Windows).
+  - Установить com0com (админ, тест-подпись драйвера).
+  - Создать пару COM10 <-> COM11 (через setupg.exe или CLI).
+  - Запустить OpenModSim: RTU Slave на COM11, slave ID = 1, holding registers 0-10.
+  - Проверить: концентратор открывает COM10, читает регистры из OpenModSim.
