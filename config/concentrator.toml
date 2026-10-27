@@ -67,3 +67,14 @@ collect_interval_ms = 1000
 cpu_source = "ebpf"
 disk_devices = ["/dev/sda", "/dev/sdb"]
 push_interval_ms = 1000
+# --- Modbus paths (production vs emulation) ---
+[modbus]
+mode = "emulation"
+
+[modbus.production]
+config_path = "/var/thingspro/data/config.json"
+registers_path = "/var/thingspro/data/registers.json"
+
+[modbus.emulation]
+config_path = "emulation/aig-502/config.json"
+registers_path = "emulation/aig-502/registers.json"

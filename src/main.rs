@@ -1,10 +1,11 @@
 //! src/main.rs - entrypoint: CLI, wiring, shutdown.
 
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use clap::{Parser, Subcommand};
 use tracing::{info, warn};
 
 use rust_iot_concentrator::api::{router, AppState};
+use rust_iot_concentrator::config::ConcentratorConfig;
 use rust_iot_concentrator::core::bus::{Bus, BusMessage, BusPayload};
 use rust_iot_concentrator::core::dispatcher::Dispatcher;
 use rust_iot_concentrator::core::mode_switch::{Mode, ModeState, Priority};
@@ -55,6 +56,11 @@ async fn main() -> anyhow::Result<()> {
 }
 
 async fn run(cli: Cli) -> anyhow::Result<()> {
+    let concentrator_cfg = ConcentratorConfig::load(&cli.config)
+        .map_err(|e| anyhow::anyhow!("config: {}", e))?;
+    let (mc, mr) = concentrator_cfg.modbus.current_paths();
+    info!(mode = %concentrator_cfg.modbus.mode, config = %mc, registers = %mr, "modbus paths");
+
     let metrics = Arc::new(OverheadMetrics::new());
     let (bus, bus_rx) = Bus::new(256, 4096, 128, 128, metrics.clone());
     info!("bus initialized");
@@ -89,7 +95,8 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
     });
     info!("domains + dispatcher started");
 
-    for a in protocols::create_all() {
+    let cfg_arc = Arc::new(RwLock::new(concentrator_cfg));
+    for a in protocols::create_all(&cfg_arc.read().unwrap()) {
         info!(protocol = a.name(), priority = ?a.priority(), "adapter registered");
     }
 
@@ -110,13 +117,13 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
     };
 
     let state: Arc<AppState> = Arc::new(AppState {
-    pool: pool.clone(),
-    root: std::path::PathBuf::from("."),
-    metrics: metrics.clone(),
-    mode: mode.clone(),
-    bus: bus.clone(),
-});
-
+        pool: pool.clone(),
+        root: std::path::PathBuf::from("."),
+        metrics: metrics.clone(),
+        mode: mode.clone(),
+        bus: bus.clone(),
+        config: cfg_arc.clone(),
+    });
     let app = router(state);
     let listener = tokio::net::TcpListener::bind(&cli.api_addr).await?;
     info!(addr = %cli.api_addr, "api server listening");

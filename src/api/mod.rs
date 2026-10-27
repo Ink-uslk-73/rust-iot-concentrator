@@ -1,6 +1,7 @@
 //! src/api/mod.rs - REST + SSE for tablet and SOC.
 
 pub mod baselines;
+pub mod config;
 pub mod events;
 pub mod metrics;
 pub mod mode;
@@ -8,8 +9,9 @@ pub mod mode;
 use axum::{routing::{get, post}, Router};
 use sqlx::PgPool;
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
+use crate::config::ConcentratorConfig;
 use crate::core::bus::Bus;
 use crate::core::mode_switch::ModeState;
 use crate::gateway::ui;
@@ -22,6 +24,7 @@ pub struct AppState {
     pub metrics: Arc<OverheadMetrics>,
     pub mode: ModeState,
     pub bus: Bus,
+    pub config: Arc<RwLock<ConcentratorConfig>>,
 }
 
 pub type SharedState = Arc<AppState>;
@@ -39,6 +42,7 @@ pub fn router(state: SharedState) -> Router {
         .route("/api/v1/events/ack",                            post(events::ack))
         .route("/api/v1/metrics/overhead",                      get(metrics::overhead))
         .route("/api/v1/mode",                                  get(mode::get_mode).post(mode::set_mode))
+        .route("/api/v1/config/mode",                           get(config::get_config_mode).post(config::set_config_mode))
         .fallback(ui::serve)
         .with_state(state)
 }

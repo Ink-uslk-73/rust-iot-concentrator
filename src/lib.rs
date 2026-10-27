@@ -12,3 +12,4 @@ pub mod storage;
 pub mod terminal;
 pub mod transport;
 pub mod vm;
+pub mod config;
