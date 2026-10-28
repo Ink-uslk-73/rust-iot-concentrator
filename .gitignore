@@ -29,3 +29,7 @@ rustc-ice-*.txt
 
 #  local scripts 
 part*.ps1
+
+# local artifacts
+src/main.rs.new
+src/main.rs.part*.bak
