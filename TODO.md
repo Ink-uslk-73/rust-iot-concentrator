@@ -126,7 +126,7 @@
   - docs/glossary.md (создан).
   - README.md, HARDWARE.md, docs/architecture.md (сноска "не Ethernet hub").
 
-- [ ] **P3.13** Modbus TCP uplink (direct SCADA/HMI).
+- [x] **P3.13** Modbus TCP uplink (direct SCADA/HMI).
   - protocols/hard/modbus_tcp.rs: Modbus TCP Server (slave) on port 502.
   - Scenario: Modbus RTU -> Modbus TCP.
 

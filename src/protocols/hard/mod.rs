@@ -6,6 +6,7 @@
 pub mod can;
 pub mod etherip;
 pub mod modbus;
+pub mod modbus_tcp;
 pub mod modbus_config;
 pub mod opcua;
 pub mod profinet;
