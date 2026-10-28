@@ -1,4 +1,5 @@
-//! src/protocols/hard/modbus.rs - Modbus RTU poller for AIG-502.
+use std::sync::Arc;
+// src/protocols/hard/modbus.rs - Modbus RTU poller for AIG-502.
 
 use std::time::{Duration, Instant};
 use tokio::time;
@@ -26,11 +27,19 @@ impl ModbusAdapter {
 }
 
 impl ProtocolAdapter for ModbusAdapter {
-    fn heartbeat(&self) -> Option<&'static str> { Some("PLATE-A") }
+    fn heartbeat_name(&self) -> Option<&'static str> { Some("PLATE-A") }
     fn name(&self) -> &'static str { "modbus" }
     fn priority(&self) -> Priority { Priority::Hard }
 
-    fn start(&self, publish: PublishFn) -> Result<(), String> {
+    fn start(&self, publish: PublishFn, registry: Arc<crate::metrics::registry::Registry>) -> Result<(), String> {
+        let reg = registry.clone();
+        tokio::spawn(async move {
+            loop {
+                let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as f64).unwrap_or(0.0);
+                reg.set_gauge("alive.PLATE-A", now);
+                tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+            }
+        });
         let cfg_path = self.config_path.clone();
         let reg_path = self.registers_path.clone();
         let refresh = self.refresh_every;

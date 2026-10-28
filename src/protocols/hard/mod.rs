@@ -1,26 +1,24 @@
-//! src/protocols/hard/mod.rs - HARD protocols (AIG-502, Debian 11).
-//!
-//! Modbus paths come from config/concentrator.toml [modbus].
-//! Switch mode via UI: POST /api/v1/config/mode {"mode":"emulation"}
-
+//! src/protocols/hard/mod.rs
 pub mod can;
 pub mod etherip;
 pub mod modbus;
-pub mod modbus_tcp;
 pub mod modbus_config;
+pub mod modbus_tcp;
 pub mod opcua;
 pub mod profinet;
 
+use std::sync::Arc;
 use super::ProtocolAdapter;
 use crate::config::ConcentratorConfig;
 
-pub fn create_all(cfg: &ConcentratorConfig) -> Vec<Box<dyn ProtocolAdapter>> {
+pub fn create_all(cfg: &ConcentratorConfig) -> Vec<Arc<dyn ProtocolAdapter>> {
     let (config_path, registers_path) = cfg.modbus.current_paths();
     vec![
-        Box::new(modbus::ModbusAdapter::new(config_path, registers_path)),
-        Box::new(opcua::OpcUaAdapter::new()),
-        Box::new(profinet::ProfinetAdapter::new()),
-        Box::new(etherip::EtherIpAdapter::new()),
-        Box::new(can::CanAdapter::new()),
+        Arc::new(modbus::ModbusAdapter::new(config_path, registers_path)),
+        Arc::new(modbus_tcp::ModbusTcpServer::new(502)),
+        Arc::new(opcua::OpcUaAdapter::new()),
+        Arc::new(profinet::ProfinetAdapter::new()),
+        Arc::new(etherip::EtherIpAdapter::new()),
+        Arc::new(can::CanAdapter::new()),
     ]
 }

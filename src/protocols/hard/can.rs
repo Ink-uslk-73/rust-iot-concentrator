@@ -1,4 +1,5 @@
-﻿//! src/protocols/hard/can.rs - CAN (socketcan).
+use std::sync::Arc;
+// src/protocols/hard/can.rs - CAN (socketcan).
 use crate::core::mode_switch::Priority;
 use crate::protocols::{ProtocolAdapter, PublishFn};
 
@@ -15,5 +16,5 @@ impl Default for CanAdapter {
 impl ProtocolAdapter for CanAdapter {
     fn name(&self) -> &'static str { "can" }
     fn priority(&self) -> Priority { Priority::Hard }
-    fn start(&self, _publish: PublishFn) -> Result<(), String> { Ok(()) }
+    fn start(&self, _publish: PublishFn, _registry: Arc<crate::metrics::registry::Registry>) -> Result<(), String> { Ok(()) }
 }

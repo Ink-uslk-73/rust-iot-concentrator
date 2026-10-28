@@ -1,13 +1,13 @@
-﻿//! src/protocols/hard/modbus_config.rs - config from AIG-502.
-//!
-//! Reads two files:
-//! - /var/thingspro/data/config.json  -> ThingsPro serials
-//! - /var/thingspro/data/registers.json -> register map + poll_ms
-//!
-//! Validation:
-//! - port_id must exist in config.json
-//! - quantity <= 125 (Modbus function 3 limit)
-//! - poll_ms >= 1
+// src/protocols/hard/modbus_config.rs - config from AIG-502.
+//
+// Reads two files:
+// - /var/thingspro/data/config.json  -> ThingsPro serials
+// - /var/thingspro/data/registers.json -> register map + poll_ms
+//
+// Validation:
+// - port_id must exist in config.json
+// - quantity <= 125 (Modbus function 3 limit)
+// - poll_ms >= 1
 
 use serde::Deserialize;
 use std::collections::HashMap;

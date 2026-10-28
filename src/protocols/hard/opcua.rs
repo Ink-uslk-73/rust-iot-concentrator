@@ -1,4 +1,5 @@
-﻿//! src/protocols/hard/opcua.rs - OPC UA (subscription).
+use std::sync::Arc;
+// src/protocols/hard/opcua.rs - OPC UA (subscription).
 use crate::core::mode_switch::Priority;
 use crate::protocols::{ProtocolAdapter, PublishFn};
 
@@ -15,5 +16,5 @@ impl Default for OpcUaAdapter {
 impl ProtocolAdapter for OpcUaAdapter {
     fn name(&self) -> &'static str { "opcua" }
     fn priority(&self) -> Priority { Priority::Hard }
-    fn start(&self, _publish: PublishFn) -> Result<(), String> { Ok(()) }
+    fn start(&self, _publish: PublishFn, _registry: Arc<crate::metrics::registry::Registry>) -> Result<(), String> { Ok(()) }
 }

@@ -1,6 +1,7 @@
-//! src/protocols/hard/modbus_tcp.rs - Modbus TCP Server (uplink, SCADA/HMI).
-//!
-//! NOT Client (tokio-modbus). Server on port 502 (slave).
+use std::sync::Arc;
+// src/protocols/hard/modbus_tcp.rs - Modbus TCP Server (uplink, SCADA/HMI).
+//
+// NOT Client (tokio-modbus). Server on port 502 (slave).
 
 use crate::core::mode_switch::Priority;
 use crate::protocols::{ProtocolAdapter, PublishFn};
@@ -16,7 +17,7 @@ impl ModbusTcpServer {
 impl ProtocolAdapter for ModbusTcpServer {
     fn name(&self) -> &'static str { "modbus-tcp" }
     fn priority(&self) -> Priority { Priority::Hard }
-    fn start(&self, _publish: PublishFn) -> Result<(), String> {
+    fn start(&self, _publish: PublishFn, _registry: Arc<crate::metrics::registry::Registry>) -> Result<(), String> {
         tracing::info!(port = self.port, "modbus tcp server (stub)");
         Ok(())
     }

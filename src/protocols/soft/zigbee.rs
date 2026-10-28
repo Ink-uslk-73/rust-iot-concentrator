@@ -1,4 +1,5 @@
-﻿//! src/protocols/soft/zigbee.rs - Zigbee (ziggurat).
+use std::sync::Arc;
+// src/protocols/soft/zigbee.rs - Zigbee (ziggurat).
 use crate::core::mode_switch::Priority;
 use crate::protocols::{ProtocolAdapter, PublishFn};
 
@@ -15,5 +16,5 @@ impl Default for ZigbeeAdapter {
 impl ProtocolAdapter for ZigbeeAdapter {
     fn name(&self) -> &'static str { "zigbee" }
     fn priority(&self) -> Priority { Priority::Soft }
-    fn start(&self, _publish: PublishFn) -> Result<(), String> { Ok(()) }
+    fn start(&self, _publish: PublishFn, _registry: Arc<crate::metrics::registry::Registry>) -> Result<(), String> { Ok(()) }
 }

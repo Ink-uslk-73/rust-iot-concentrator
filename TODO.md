@@ -1,4 +1,4 @@
-﻿# TODO - rust-iot-concentrator
+# TODO - rust-iot-concentrator
 
 Приоритеты: P0 - критично, P1 - высокий, P2 - средний, P3 - низкий.
 
@@ -148,3 +148,33 @@
   - docs/architecture.md: "Edge computing: Fog node".
   - README.md: "Edge computing (Fog node)".
   - **Why:** concentrator is Fog node + Dew connectivity + Cloud uplink, not just converter.
+## P2.18b  spawn_restartable (Supervisor)   [x]
+- [x] фабрика + catch_unwind внутри spawn
+- [x] backoff 1s, диагностика в Bus
+- [x] тест restart_tests::spawn_restartable_restarts_after_panic
+
+## P2.20c  реальный heartbeat (alive-метрика)   [x]
+- [x] ProtocolAdapter::health_check(&Registry, timeout_ms)
+- [x] ProtocolAdapter::heartbeat_name() -> Option<&'static str>
+- [x] modbus   alive.PLATE-A (HARD)
+- [x] matter   alive.PLATE-B (SOFT)
+- [x] mqtt     alive.PLATE-C (LIFE)
+- [x] spawn_heartbeat читает health_check, а не "true по умолчанию"
+
+## P2.18c  restartable для доменов с уникальными ресурсами   [ ]
+- [ ] Внутренний reconnect-loop в mqtt/http (без пересоздания Receiver)
+- [ ] Проверить, что ни один домен не ломается при панике
+- [ ] Диагностика: счётчик паник на домен
+
+## P3.19  Triple redundancy: AIG-502 failover   [ ]
+- [ ] Modbus TCP slave на PLATE-C как fallback
+- [ ] Snapshot последней телеметрии (Redis  AIG-502 по запросу)
+
+## P3.20  CORE: Redis + Raw CBOR + TimescaleDB   [ ]
+- [ ] Redis hot-path (TTL 60s)         готово частично
+- [ ] Raw CBOR writer (10MB-сегменты)
+- [ ] TimescaleDB hypertable (1s/1m/1h)
+
+## Прочее   [ ]
+- [ ] docs/glossary.md  обновлять при новых терминах
+- [ ] CI: cargo check + cargo test на каждый PR

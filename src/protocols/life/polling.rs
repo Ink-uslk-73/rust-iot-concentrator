@@ -1,4 +1,5 @@
-﻿//! src/protocols/life/polling.rs - Polling (adaptive).
+use std::sync::Arc;
+// src/protocols/life/polling.rs - Polling (adaptive).
 use crate::core::mode_switch::Priority;
 use crate::protocols::{ProtocolAdapter, PublishFn};
 
@@ -15,5 +16,5 @@ impl Default for PollingAdapter {
 impl ProtocolAdapter for PollingAdapter {
     fn name(&self) -> &'static str { "polling" }
     fn priority(&self) -> Priority { Priority::Life }
-    fn start(&self, _publish: PublishFn) -> Result<(), String> { Ok(()) }
+    fn start(&self, _publish: PublishFn, _registry: Arc<crate::metrics::registry::Registry>) -> Result<(), String> { Ok(()) }
 }
