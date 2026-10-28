@@ -86,3 +86,10 @@ ttl_sec = 60
 max_ram_pct = 1
 flush_interval_sec = 60
 raw_path = "storage/raw/telemetry.cbor"
+# --- Transport (NUMA-aware) ---
+[transport]
+# kind = "shmem" | "vsock" | "nop"
+kind = "nop"
+shmem_path = "/dev/shm/concentrator.shm"
+vsock_cid = 2
+vsock_port = 5000
