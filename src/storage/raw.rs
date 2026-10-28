@@ -54,3 +54,20 @@ impl RawStore {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn cbor_roundtrip() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = RawStore::new(dir.path().join("test.cbor"));
+        store.append(&RawPoint { sensor_id: "s1".into(), value: 42.5, ts_ms: 1 }).unwrap();
+        store.append(&RawPoint { sensor_id: "s2".into(), value: 43.5, ts_ms: 2 }).unwrap();
+        let points = store.read_all().unwrap();
+        assert_eq!(points.len(), 2);
+        assert_eq!(points[0].sensor_id, "s1");
+        assert_eq!(points[0].value, 42.5);
+    }
+}
+
