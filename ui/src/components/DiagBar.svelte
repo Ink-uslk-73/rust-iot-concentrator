@@ -41,7 +41,7 @@
 </div>
 
 <style>
-  .diagbar { position: fixed; bottom: 0; left: 220px; right: 0; background: #1e293b; border-top: 1px solid #334155; font-size: 0.8rem; z-index: 50; }
+  .diagbar { background: #1e293b; border-top: 1px solid #334155; font-size: 0.8rem; z-index: 50; }
   .toggle { background: transparent; border: none; color: #e2e8f0; padding: 0.25rem 0.5rem; cursor: pointer; }
   .content { display: flex; gap: 0.75rem; padding: 0.25rem 0.5rem; overflow-x: auto; }
   .sat { padding: 0 0.5rem; border-radius: 3px; }

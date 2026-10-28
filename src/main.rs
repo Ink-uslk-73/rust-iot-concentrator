@@ -93,7 +93,7 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
     tokio::spawn(sat_wd.run());
 
     // Supervisor + semaphores (isolation, let-it-crash)
-    let mut supervisor = Supervisor::new();
+    let mut supervisor = Supervisor::new().with_bus(bus.clone());
     let hard_sem = VmSemaphore::new();
     let soft_sem = VmSemaphore::new();
     let life_sem = VmSemaphore::new();

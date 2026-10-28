@@ -4,12 +4,18 @@ use tokio::task::JoinSet;
 use tokio_util::sync::CancellationToken;
 use tracing::{info, warn};
 
+use crate::core::bus::{Bus, BusMessage, BusPayload, DiagLevel};
+use crate::core::mode_switch::Priority;
 use crate::vm::state::{VmSemaphore, VmState};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SupervisorState { Running, Restarting, Stopped }
 
 pub struct Supervisor {
     token: CancellationToken,
     set: JoinSet<()>,
     semaphores: Vec<(String, VmSemaphore)>,
+    bus: Option<Bus>,
 }
 
 impl Supervisor {
@@ -18,7 +24,13 @@ impl Supervisor {
             token: CancellationToken::new(),
             set: JoinSet::new(),
             semaphores: Vec::new(),
+            bus: None,
         }
+    }
+
+    pub fn with_bus(mut self, bus: Bus) -> Self {
+        self.bus = Some(bus);
+        self
     }
 
     pub fn register(&mut self, name: &str, sem: VmSemaphore) {
@@ -36,7 +48,6 @@ impl Supervisor {
         self.token.clone()
     }
 
-    /// let-it-crash: wait all, restart on panic.
     pub async fn run(mut self) {
         loop {
             tokio::select! {
@@ -47,13 +58,22 @@ impl Supervisor {
                 Some(res) = self.set.join_next() => {
                     if let Err(e) = res {
                         warn!("supervisor: task panicked: {}", e);
-                        // let-it-crash: restart (placeholder)
+                        if let Some(bus) = &self.bus {
+                            let _ = bus.diagnostics.try_send(BusMessage::new(
+                                "supervisor",
+                                Priority::Hard,
+                                BusPayload::Diagnostic {
+                                    level: DiagLevel::Critical,
+                                    component: "supervisor".into(),
+                                    message: format!("task panicked: {}", e),
+                                },
+                            ));
+                        }
                     }
                 }
                 else => break,
             }
         }
-        // structured: join all
         self.set.shutdown().await;
         info!("supervisor: shutdown complete");
     }
