@@ -1,0 +1,30 @@
+<domain type='kvm'>
+  <name>concentrator-hard-standby</name>
+  <memory unit='GiB'>8</memory>
+  <vcpu placement='static'>8</vcpu>
+  <cputune>
+    <vcpupin vcpu='0' cpuset='64'/>
+    <vcpupin vcpu='1' cpuset='65'/>
+    <vcpupin vcpu='2' cpuset='66'/>
+    <vcpupin vcpu='3' cpuset='67'/>
+    <vcpupin vcpu='4' cpuset='68'/>
+    <vcpupin vcpu='5' cpuset='69'/>
+    <vcpupin vcpu='6' cpuset='70'/>
+    <vcpupin vcpu='7' cpuset='71'/>
+    <emulatorpin cpuset='32-47'/>
+  </cputune>
+  <numatune>
+    <memory mode='strict' nodeset='1'/>
+  </numatune>
+  <os><type arch='x86_64'>hvm</type><boot dev='hd'/></os>
+  <features><acpi/><apic/></features>
+  <cpu mode='host-passthrough'/>
+  <devices>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2'/>
+      <source file='/var/lib/libvirt/images/concentrator-hard-standby.qcow2'/>
+      <target dev='vda' bus='virtio'/>
+    </disk>
+    <vsock model='virtio'><cid auto='any'/></vsock>
+  </devices>
+</domain>

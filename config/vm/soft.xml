@@ -1,0 +1,26 @@
+<domain type='kvm'>
+  <name>concentrator-soft</name>
+  <memory unit='GiB'>8</memory>
+  <vcpu placement='static'>4</vcpu>
+  <cputune>
+    <vcpupin vcpu='0' cpuset='72'/>
+    <vcpupin vcpu='1' cpuset='73'/>
+    <vcpupin vcpu='2' cpuset='74'/>
+    <vcpupin vcpu='3' cpuset='75'/>
+    <emulatorpin cpuset='32-47'/>
+  </cputune>
+  <numatune>
+    <memory mode='strict' nodeset='1'/>
+  </numatune>
+  <os><type arch='x86_64'>hvm</type><boot dev='hd'/></os>
+  <features><acpi/><apic/></features>
+  <cpu mode='host-passthrough'/>
+  <devices>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2'/>
+      <source file='/var/lib/libvirt/images/concentrator-soft.qcow2'/>
+      <target dev='vda' bus='virtio'/>
+    </disk>
+    <vsock model='virtio'><cid auto='any'/></vsock>
+  </devices>
+</domain>

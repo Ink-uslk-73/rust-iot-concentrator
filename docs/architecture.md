@@ -73,3 +73,25 @@ See docs/glossary.md for full table + conversion scenarios + "above conversion".
 - **Dew** (direct): Matter, Zigbee, Thread, BLE - via protocols/soft/.
 
 **5G MEC**: NFV principles (decomposition, orchestration) - see docs/glossary.md.
+
+## VM layout
+
+| VM | NUMA | Cores | Memory | numatune |
+|----|------|-------|--------|----------|
+| **concentrator-soft** | 1 | 72-95 (4 vCPU) | 8 GiB | strict node 1 |
+| **concentrator-life** | 0 | 8-31 (8 vCPU) | 16 GiB | strict node 0 |
+| HARD (active) | 0 | 0-7 | (later) | strict node 0 |
+| HARD (standby) | 1 | 64-71 | (later) | strict node 1 |
+
+**Key:** vCPU and memory on **same** NUMA node (strict). Cross-node forbidden for HARD.
+Scripts: scripts/vm/start-soft.sh, start-life.sh, check-vm.sh.
+
+## HARD overflow (Variant C)
+
+- **HARD active** (cores 0-7, node 0): always running.
+- **HARD standby** (cores 64-71, node 1): **defined** but **not started** (overflow).
+- **On overload** (node 0): start standby, **split devices** (/dev/ttyM1).
+- **On recovery**: stop standby.
+- **Not migration**: device split, not thread migration.
+- **NUMA health**: 
+umastat -c qemu-kvm (numa_foreign must be 0).

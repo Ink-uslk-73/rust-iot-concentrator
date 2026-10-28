@@ -36,23 +36,23 @@
 ## P2 - средний приоритет
 
 - [x] **P2.2** Дашборд Svelte (`ui/`): Dashboard, ModeSwitch, Telemetry, Events, Terminal, Help (modal, tooltips, autocomplete, thresholds). Встроен в бинарник (`rust-embed`).
-- [ ] **P2.11** Вынести SOFT в VM (cores 72-95, node 1).
+- [x] **P2.11** Вынести SOFT в VM (cores 72-95, node 1).
   - `<vcpupin>` + `<numatune mode='strict' nodeset='1'>`.
   - `MPOL_BIND`, shmem на node 1.
   - **Зависит от:** `lspci -v` (подтвердить PLATE-B на node 1).
-- [ ] **P2.12** Вынести LIFE в VM (cores 8-31, node 0).
+- [x] **P2.12** Вынести LIFE в VM (cores 8-31, node 0).
   - `<vcpupin>` + `<numatune mode='strict' nodeset='0'>`.
   - `MPOL_BIND`, shmem на node 0.
   - **Зависит от:** `lspci -v` (подтвердить PLATE-C на node 0).
-- [ ] **P2.13** Единая модель эксплуатации: все домены - VM.
+- [x] **P2.13** Единая модель эксплуатации: все домены - VM.
   - **Ограничение:** делегирование ядер **только внутри ноды** (cross-node запрещён для HARD).
   - `virsh setvcpus --live` (внутри ноды), cgroup v2.
-- [ ] **P2.14** NUMA health-check.
+- [x] **P2.14** NUMA health-check.
   - `numastat -c qemu-kvm` -> `numa_foreign` должен быть 0.
   - Alert (`DiagLevel::Critical`) при `numa_foreign > 0`.
   - На housekeeping ядрах (32-47), **не** на HARD (0-7).
   - `lspci -v` - **один раз** при развёртывании, результат в `config/numa.toml`.
-- [ ] **P2.15** HARD overflow (Вариант C).
+- [x] **P2.15** HARD overflow (Вариант C).
   - HARD standby (node 1) **не запущен** в норме.
   - При перегрузке node 0 - включить standby, разделить устройства (`/dev/ttyM1`).
   - При спаде - выключить standby.
