@@ -1,4 +1,4 @@
-//! src/main.rs - entrypoint: CLI, wiring, shutdown.
+//! src/main.rs - entrypoint: CLI, wiring, supervisor, shutdown.
 
 use std::sync::{Arc, RwLock};
 use clap::{Parser, Subcommand};
@@ -13,10 +13,12 @@ use rust_iot_concentrator::gateway::GatewayConfig;
 use rust_iot_concentrator::metrics::OverheadMetrics;
 use rust_iot_concentrator::protocols;
 use rust_iot_concentrator::storage::pg;
+use rust_iot_concentrator::supervisor::Supervisor;
 use rust_iot_concentrator::vm::hard::HardDomain;
 use rust_iot_concentrator::vm::life::LifeDomain;
-use rust_iot_concentrator::vm::run_domain;
+use rust_iot_concentrator::vm::run_domain_with_sem;
 use rust_iot_concentrator::vm::soft::SoftDomain;
+use rust_iot_concentrator::vm::state::VmSemaphore;
 
 #[derive(Parser)]
 #[command(name = "rust-iot-concentrator", version, about = "Telecom concentrator v4.0")]
@@ -60,18 +62,20 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
         .map_err(|e| anyhow::anyhow!("config: {}", e))?;
     let (mc, mr) = concentrator_cfg.modbus.current_paths();
     info!(mode = %concentrator_cfg.modbus.mode, config = %mc, registers = %mr, "modbus paths");
-let metrics = Arc::new(OverheadMetrics::new());
-let registry = Arc::new(rust_iot_concentrator::metrics::registry::Registry::new());
-let mut self_tel = rust_iot_concentrator::metrics::self_telemetry::SelfTelemetry::new();
-let registry_bg = registry.clone();
-tokio::spawn(async move {
-    let mut tick = tokio::time::interval(std::time::Duration::from_secs(2));
-    loop {
-        tick.tick().await;
-        self_tel.publish(&registry_bg);
-    }
-});
-let (bus, bus_rx) = Bus::new(256, 4096, 128, 128, metrics.clone());
+
+    let metrics = Arc::new(OverheadMetrics::new());
+    let registry = Arc::new(rust_iot_concentrator::metrics::registry::Registry::new());
+    let mut self_tel = rust_iot_concentrator::metrics::self_telemetry::SelfTelemetry::new();
+    let registry_bg = registry.clone();
+    tokio::spawn(async move {
+        let mut tick = tokio::time::interval(std::time::Duration::from_secs(2));
+        loop {
+            tick.tick().await;
+            self_tel.publish(&registry_bg);
+        }
+    });
+
+    let (bus, bus_rx) = Bus::new(256, 4096, 128, 128, metrics.clone());
     info!("bus initialized");
 
     let mode = ModeState::with_mode(Mode::All);
@@ -80,24 +84,62 @@ let (bus, bus_rx) = Bus::new(256, 4096, 128, 128, metrics.clone());
     let (signals_rx, telemetry_rx, status_rx, diag_rx) = bus_rx.split();
     let (dispatcher, domain_receivers) = Dispatcher::new(mode.clone(), bus.clone(), 256);
 
+    // Supervisor + semaphores (isolation, let-it-crash)
+    let mut supervisor = Supervisor::new();
+    let hard_sem = VmSemaphore::new();
+    let soft_sem = VmSemaphore::new();
+    let life_sem = VmSemaphore::new();
+    supervisor.register("hard", hard_sem.clone());
+    supervisor.register("soft", soft_sem.clone());
+    supervisor.register("life", life_sem.clone());
+
     let (dummy_tx_soft, dummy_rx_soft) = tokio::sync::mpsc::channel(1);
     let (dummy_tx_life, dummy_rx_life) = tokio::sync::mpsc::channel(1);
     std::mem::forget(dummy_tx_soft);
     std::mem::forget(dummy_tx_life);
 
-    let hard_handle = tokio::spawn(run_domain(
-        HardDomain::default(), domain_receivers.hard, domain_receivers.commands,
-        bus.clone(), std::time::Duration::from_millis(10),
-    ));
-    let soft_handle = tokio::spawn(run_domain(
-        SoftDomain::default(), domain_receivers.soft, dummy_rx_soft,
-        bus.clone(), std::time::Duration::from_millis(100),
-    ));
-    let life_handle = tokio::spawn(run_domain(
-        LifeDomain::default(), domain_receivers.life, dummy_rx_life,
-        bus.clone(), std::time::Duration::from_millis(1000),
-    ));
-    let dispatcher_handle = tokio::spawn(async move {
+    // Domains (with semaphores, mpsc per domain)
+    let hard_bus = bus.clone();
+    let hard_sem2 = hard_sem.clone();
+    supervisor.spawn(async move {
+        run_domain_with_sem(
+            HardDomain::default(),
+            domain_receivers.hard,
+            domain_receivers.commands,
+            hard_bus,
+            std::time::Duration::from_millis(10),
+            hard_sem2,
+        ).await;
+    });
+
+    let soft_bus = bus.clone();
+    let soft_sem2 = soft_sem.clone();
+    supervisor.spawn(async move {
+        run_domain_with_sem(
+            SoftDomain::default(),
+            domain_receivers.soft,
+            dummy_rx_soft,
+            soft_bus,
+            std::time::Duration::from_millis(100),
+            soft_sem2,
+        ).await;
+    });
+
+    let life_bus = bus.clone();
+    let life_sem2 = life_sem.clone();
+    supervisor.spawn(async move {
+        run_domain_with_sem(
+            LifeDomain::default(),
+            domain_receivers.life,
+            dummy_rx_life,
+            life_bus,
+            std::time::Duration::from_millis(1000),
+            life_sem2,
+        ).await;
+    });
+
+    // Dispatcher
+    supervisor.spawn(async move {
         if let Err(e) = dispatcher.run(telemetry_rx, signals_rx, status_rx, diag_rx).await {
             warn!("dispatcher error: {}", e);
         }
@@ -125,15 +167,23 @@ let (bus, bus_rx) = Bus::new(256, 4096, 128, 128, metrics.clone());
         Err(e) => { warn!(error = %e, "postgresql unavailable; running in file-fallback mode"); None }
     };
 
-    let state: Arc<AppState> = Arc::new(AppState {
+    let cache = if true {
+    // TODO: read from concentrator_cfg.cache.enabled
+    None::<Arc<rust_iot_concentrator::storage::cache::HotCache>>
+} else {
+    None
+};
+
+let state: Arc<AppState> = Arc::new(AppState {
     pool: pool.clone(),
     root: std::path::PathBuf::from("."),
     metrics: metrics.clone(),
-    registry: registry.clone(),   // <-- добавить
+    registry: registry.clone(),
     mode: mode.clone(),
     bus: bus.clone(),
     config: cfg_arc.clone(),
-    });
+    cache: cache.clone(),
+});
     let app = router(state);
     let listener = tokio::net::TcpListener::bind(&cli.api_addr).await?;
     info!(addr = %cli.api_addr, "api server listening");
@@ -164,6 +214,8 @@ let (bus, bus_rx) = Bus::new(256, 4096, 128, 128, metrics.clone());
         }))
     } else { None };
 
+    // Supervisor run (let-it-crash) + Ctrl+C
+    let sup_handle = tokio::spawn(supervisor.run());
     tokio::signal::ctrl_c().await?;
     info!("shutdown signal received");
     let _ = bus.send(BusMessage::new("main", Priority::Hard, BusPayload::Shutdown)).await;
@@ -171,10 +223,7 @@ let (bus, bus_rx) = Bus::new(256, 4096, 128, 128, metrics.clone());
 
     api_handle.abort();
     if let Some(h) = sync_handle { h.abort(); }
-    dispatcher_handle.abort();
-    hard_handle.abort();
-    soft_handle.abort();
-    life_handle.abort();
+    sup_handle.abort();
     info!("shutdown complete");
     Ok(())
 }

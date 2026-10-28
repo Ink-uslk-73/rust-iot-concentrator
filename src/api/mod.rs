@@ -6,6 +6,7 @@ pub mod events;
 pub mod metrics;
 pub mod mode;
 pub mod self_metrics;
+pub mod telemetry;
 
 use axum::{routing::{get, post}, Router};
 use sqlx::PgPool;
@@ -25,6 +26,7 @@ pub struct AppState {
     pub root: PathBuf,
     pub metrics: Arc<OverheadMetrics>,
     pub registry: Arc<Registry>,
+    pub cache: Option<Arc<crate::storage::cache::HotCache>>,
     pub mode: ModeState,
     pub bus: Bus,
     pub config: Arc<RwLock<ConcentratorConfig>>,
@@ -44,7 +46,8 @@ pub fn router(state: SharedState) -> Router {
         .route("/api/v1/events/:event_id",                      get(events::get_one))
         .route("/api/v1/events/ack",                            post(events::ack))
         .route("/api/v1/metrics/overhead",                      get(metrics::overhead))
-        .route("/api/v1/metrics/self",                          get(self_metrics::self_metrics))
+        .route("/api/v1/metrics/self",                          get(self_metrics::self_metrics))
+        .route("/api/v1/telemetry/latest/:sensor_id", get(telemetry::latest))
         .route("/api/v1/mode",                                  get(mode::get_mode).post(mode::set_mode))
         .route("/api/v1/config/mode",                           get(config::get_config_mode).post(config::set_config_mode))
         .fallback(ui::serve)

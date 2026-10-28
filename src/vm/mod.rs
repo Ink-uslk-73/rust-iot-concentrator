@@ -1,4 +1,4 @@
-﻿//! src/vm/mod.rs - Domain (VM): HARD/SOFT/LIFE/STORAGE.
+//! src/vm/mod.rs - Domain (VM): HARD/SOFT/LIFE/STORAGE.
 //!
 //! Each domain:
 //! - receives BusMessage from internal channel (dispatcher)
@@ -9,6 +9,7 @@
 //! On Start: restores state, continues.
 //! On Shutdown: exits loop.
 
+pub mod state;
 pub mod hard;
 pub mod life;
 pub mod soft;
@@ -197,4 +198,18 @@ mod tests {
         cmd_tx.send((DomainKind::Life, DomainCommand::Shutdown)).await.unwrap();
         assert!(tokio::time::timeout(std::time::Duration::from_secs(1), h).await.is_ok());
     }
+}
+pub async fn run_domain_with_sem<D: crate::vm::Domain>(
+    domain: D,
+    telemetry_rx: tokio::sync::mpsc::Receiver<crate::core::bus::BusMessage>,
+    commands_rx: tokio::sync::mpsc::Receiver<(crate::core::dispatcher::DomainKind, crate::core::dispatcher::DomainCommand)>,
+    bus: crate::core::bus::Bus,
+    tick: std::time::Duration,
+    sem: crate::vm::state::VmSemaphore,
+) {
+    use crate::vm::state::VmState;
+    sem.set(VmState::Waiting);
+    sem.set(VmState::Running);
+    run_domain(domain, telemetry_rx, commands_rx, bus, tick).await;
+    sem.set(VmState::Stopped);
 }

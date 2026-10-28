@@ -78,3 +78,11 @@ registers_path = "/var/thingspro/data/registers.json"
 [modbus.emulation]
 config_path = "emulation/aig-502/config.json"
 registers_path = "emulation/aig-502/registers.json"
+# --- Redis hot-path cache (optional) ---
+[cache]
+enabled = false
+url = "redis://127.0.0.1:6379"
+ttl_sec = 60
+max_ram_pct = 1
+flush_interval_sec = 60
+raw_path = "storage/raw/telemetry.cbor"
