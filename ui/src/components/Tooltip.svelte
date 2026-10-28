@@ -12,15 +12,24 @@
   }
 </script>
 
-<span class="tt" on:mouseenter={show} on:mouseleave={hide}>
+<span
+  class="tt"
+  role="tooltip"
+  aria-label={text}
+  tabindex="0"
+  on:mouseenter={show}
+  on:mouseleave={hide}
+  on:focus={show}
+  on:blur={hide}
+>
   <slot />
   {#if visible}
-    <span class="popup">{text}</span>
+    <span class="popup" aria-hidden="true">{text}</span>
   {/if}
 </span>
 
 <style>
-  .tt { position: relative; display: inline-block; cursor: help; }
+  .tt { position: relative; display: inline-block; cursor: help; outline: none; }
   .popup { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
     background: #0f172a; color: #e2e8f0; border: 1px solid #334155; padding: 0.5rem 0.75rem;
     border-radius: 6px; font-size: 0.8rem; white-space: nowrap; z-index: 100;

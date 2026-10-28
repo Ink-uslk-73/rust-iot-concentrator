@@ -5,13 +5,29 @@
   function close() {
     open = false;
   }
+
+  function onKey(e: KeyboardEvent) {
+    if (e.key === "Escape") close();
+  }
 </script>
 
 {#if open}
-<div class="overlay" on:click={close} on:keydown={(e) => e.key === "Escape" && close()} role="presentation">
-  <div class="modal" on:click|stopPropagation role="dialog" aria-modal="true">
+<div
+  class="overlay"
+  role="presentation"
+  on:click={close}
+  on:keydown={onKey}
+>
+  <div
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-label={section ? "Help: " + section : "Help"}
+    tabindex="-1"
+    on:click|stopPropagation
+  >
     <header>
-      <h2>Help {section ? " " + section : ""}</h2>
+      <h2>Help {section ? "- " + section : ""}</h2>
       <button on:click={close} aria-label="close">x</button>
     </header>
     <div class="body">
@@ -34,7 +50,6 @@
       {#if section === "Terminal" || !section}
         <h3>Terminal</h3>
         <p>Local commands: help, status, about, clear, modes, api.</p>
-        <p>Type any command and press Enter. Autocomplete: start typing.</p>
       {/if}
       {#if section === "Events" || !section}
         <h3>Events</h3>
@@ -51,7 +66,7 @@
 
 <style>
   .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 200; }
-  .modal { background: #1e293b; color: #e2e8f0; border-radius: 8px; max-width: 640px; width: 90%; max-height: 80vh; overflow: auto; padding: 1rem; }
+  .modal { background: #1e293b; color: #e2e8f0; border-radius: 8px; max-width: 640px; width: 90%; max-height: 80vh; overflow: auto; padding: 1rem; outline: none; }
   header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; margin-bottom: 1rem; }
   header h2 { margin: 0; font-size: 1.1rem; }
   header button { background: transparent; border: 1px solid #334155; color: #e2e8f0; border-radius: 4px; padding: 0.25rem 0.5rem; cursor: pointer; }
