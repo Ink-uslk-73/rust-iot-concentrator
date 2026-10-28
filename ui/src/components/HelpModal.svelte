@@ -1,31 +1,15 @@
 <script lang="ts">
   export let open = false;
   export let section = "";
-
-  function close() {
-    open = false;
-  }
-
-  function onKey(e: KeyboardEvent) {
-    if (e.key === "Escape") close();
-  }
+  function close() { open = false; }
+  function onKey(e: KeyboardEvent) { if (e.key === "Escape") close(); }
 </script>
 
 {#if open}
-<div
-  class="overlay"
-  role="presentation"
-  on:click={close}
-  on:keydown={onKey}
->
-  <div
-    class="modal"
-    role="dialog"
-    aria-modal="true"
-    aria-label={section ? "Help: " + section : "Help"}
-    tabindex="-1"
-    on:click|stopPropagation
-  >
+<div class="overlay" role="presentation" on:click={close} on:keydown={onKey}>
+  <div class="modal" role="dialog" aria-modal="true"
+    aria-label={section ? "Help: " + section : "Help"} tabindex="-1"
+    on:click|stopPropagation>
     <header>
       <h2>Help {section ? "- " + section : ""}</h2>
       <button on:click={close} aria-label="close">x</button>
@@ -65,11 +49,34 @@
 {/if}
 
 <style>
-  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 200; }
-  .modal { background: #1e293b; color: #e2e8f0; border-radius: 8px; max-width: 640px; width: 90%; max-height: 80vh; overflow: auto; padding: 1rem; outline: none; }
-  header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; margin-bottom: 1rem; }
-  header h2 { margin: 0; font-size: 1.1rem; }
-  header button { background: transparent; border: 1px solid #334155; color: #e2e8f0; border-radius: 4px; padding: 0.25rem 0.5rem; cursor: pointer; }
-  h3 { color: #93c5fd; margin-bottom: 0.5rem; }
-  ul { margin-left: 1rem; }
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200;
+  }
+  .modal {
+    background: #f8fafc;
+    color: #0f172a;
+    border-radius: 8px;
+    max-width: 640px; width: 90%; max-height: 80vh;
+    overflow: auto; padding: 1rem; outline: none;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    line-height: 1.5;
+  }
+  header {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 0.5rem; margin-bottom: 1rem;
+  }
+  header h2 { margin: 0; font-size: 1.15rem; font-weight: 600; color: #0f172a; }
+  header button {
+    background: #e2e8f0; border: 1px solid #94a3b8; color: #0f172a;
+    border-radius: 4px; padding: 0.25rem 0.6rem; cursor: pointer; font-weight: 600;
+  }
+  header button:hover { background: #cbd5e1; }
+  h3 { color: #1e40af; margin: 0.75rem 0 0.5rem 0; font-size: 1rem; font-weight: 600; }
+  p, li { color: #1e293b; line-height: 1.5; }
+  ul { margin-left: 1.25rem; }
 </style>
