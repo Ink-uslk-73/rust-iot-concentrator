@@ -8,6 +8,7 @@
   import Events from "./components/Events.svelte";
   import Terminal from "./components/Terminal.svelte";
   import Help from "./components/Help.svelte";
+  import Clock from "./components/Clock.svelte";
   import DiagBar from "./components/DiagBar.svelte";
 
   let page: "dashboard" | "telemetry" | "events" | "terminal" | "help" = "dashboard";
@@ -54,7 +55,7 @@
       {:else if page === "help"}
         <Help />
       {/if}
-   </main>
+    </main>
     <DiagBar />
   </div>
 </div>
