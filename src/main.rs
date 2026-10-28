@@ -196,9 +196,12 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
         satellites: satellite_registry.clone(),
     });
     let app = router(state);
-    let listener = tokio::net::TcpListener::bind(&cli.api_addr).await?;
-    info!(addr = %cli.api_addr, "api server listening");
-    let api_handle = tokio::spawn(async move {
+    let api_addr = cfg_arc.read().unwrap().api.addr.clone()
+    .unwrap_or_else(|| cli.api_addr.clone());
+    let listener = tokio::net::TcpListener::bind(&api_addr).await?;
+    info!(addr = %api_addr, "api server listening");
+
+      let api_handle = tokio::spawn(async move {
         if let Err(e) = axum::serve(listener, app).await {
             warn!("api server error: {}", e);
         }

@@ -93,3 +93,6 @@ kind = "nop"
 shmem_path = "/dev/shm/concentrator.shm"
 vsock_cid = 2
 vsock_port = 5000
+# --- API (dashboard + REST) ---
+[api]
+addr = "127.0.0.1:1967"
