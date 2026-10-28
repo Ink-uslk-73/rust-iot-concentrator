@@ -1,4 +1,4 @@
-﻿//! src/terminal/mod.rs - terminal for tablet (WebSocket <-> PTY/SSH).
+//! src/terminal/mod.rs - terminal for tablet (WebSocket <-> PTY/SSH).
 //!
 //! Decisions (module 1, section 1):
 //! - WebSocket proxy, not direct SSH.
@@ -79,7 +79,7 @@ mod tests {
 
     #[test]
     fn session_audit_writes_diagnostics() {
-        let (bus, mut rx) = Bus::new(64, 64, 64, 64);
+        let (bus, mut rx) = Bus::new(64, 64, 64, 64, std::sync::Arc::new(crate::metrics::OverheadMetrics::new()));
         let s = TerminalSession::new("vm-hard", "CN=tablet-01", bus);
         s.audit("open", None, "ok");
         let m = rx.diagnostics.try_recv().unwrap();
@@ -89,7 +89,7 @@ mod tests {
 
     #[test]
     fn session_id_is_uuid() {
-        let (bus, _) = Bus::new(1, 1, 1, 1);
+        let (bus, _) = Bus::new(1, 1, 1, 1, std::sync::Arc::new(crate::metrics::OverheadMetrics::new()));
         let s = TerminalSession::new("core", "x", bus);
         assert!(!s.id.is_nil());
     }

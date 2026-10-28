@@ -141,7 +141,7 @@ mod tests {
 
     #[tokio::test]
     async fn handles_messages_while_running() {
-        let (bus, _rx) = Bus::new(64, 64, 64, 64);
+        let (bus, _rx) = Bus::new(64, 64, 64, 64, std::sync::Arc::new(crate::metrics::OverheadMetrics::new()));
         let (tele_tx, tele_rx) = mpsc::channel(16);
         let (cmd_tx, cmd_rx) = mpsc::channel(16);
         let d = TestDomain {
@@ -178,7 +178,7 @@ mod tests {
 
     #[tokio::test]
     async fn ignores_commands_for_other_domains() {
-        let (bus, _rx) = Bus::new(64, 64, 64, 64);
+        let (bus, _rx) = Bus::new(64, 64, 64, 64, std::sync::Arc::new(crate::metrics::OverheadMetrics::new()));
         let (_tele_tx, tele_rx) = mpsc::channel(16);
         let (cmd_tx, cmd_rx) = mpsc::channel(16);
         let d = TestDomain {

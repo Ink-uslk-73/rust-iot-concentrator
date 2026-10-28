@@ -1,4 +1,4 @@
-﻿//! src/core/dispatcher.rs - Event routing across domains.
+//! src/core/dispatcher.rs - Event routing across domains.
 //!
 //! Receives telemetry from Bus -> routes to 3 domains by priority.
 //! On mode change: starts/stops corresponding domains.
@@ -206,7 +206,7 @@ mod tests {
     use crate::core::bus::{Bus, BusPayload};
 
     fn make() -> (Dispatcher, DomainReceivers, Bus) {
-        let (bus, _rx) = Bus::new(16, 16, 16, 16);
+        let (bus, _rx) = Bus::new(16, 16, 16, 16, std::sync::Arc::new(crate::metrics::OverheadMetrics::new()));
         let mode = ModeState::with_mode(Mode::All);
         let (disp, drecv) = Dispatcher::new(mode, bus.clone(), 16);
         (disp, drecv, bus)

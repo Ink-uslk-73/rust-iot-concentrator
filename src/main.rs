@@ -1,4 +1,4 @@
-//! src/main.rs - entrypoint: CLI, wiring, supervisor, shutdown.
+//! src/main.rs - entrypoint: CLI, wiring, supervisor, satellite watchdog.
 
 use std::sync::{Arc, RwLock};
 use clap::{Parser, Subcommand};
@@ -12,6 +12,8 @@ use rust_iot_concentrator::core::mode_switch::{Mode, ModeState, Priority};
 use rust_iot_concentrator::gateway::GatewayConfig;
 use rust_iot_concentrator::metrics::OverheadMetrics;
 use rust_iot_concentrator::protocols;
+use rust_iot_concentrator::satellite::watchdog::SatelliteWatchdog;
+use rust_iot_concentrator::satellite::SatelliteRegistry;
 use rust_iot_concentrator::storage::pg;
 use rust_iot_concentrator::supervisor::Supervisor;
 use rust_iot_concentrator::vm::hard::HardDomain;
@@ -167,23 +169,22 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
         Err(e) => { warn!(error = %e, "postgresql unavailable; running in file-fallback mode"); None }
     };
 
-    let cache = if true {
-    // TODO: read from concentrator_cfg.cache.enabled
-    None::<Arc<rust_iot_concentrator::storage::cache::HotCache>>
-} else {
-    None
-};
+    // Satellite registry + watchdog
+    let satellite_registry = Arc::new(SatelliteRegistry::new());
+    let sat_wd = SatelliteWatchdog::new(satellite_registry.clone(), bus.clone());
+    tokio::spawn(sat_wd.run());
 
-let state: Arc<AppState> = Arc::new(AppState {
-    pool: pool.clone(),
-    root: std::path::PathBuf::from("."),
-    metrics: metrics.clone(),
-    registry: registry.clone(),
-    mode: mode.clone(),
-    bus: bus.clone(),
-    config: cfg_arc.clone(),
-    cache: cache.clone(),
-});
+    let state: Arc<AppState> = Arc::new(AppState {
+        pool: pool.clone(),
+        root: std::path::PathBuf::from("."),
+        metrics: metrics.clone(),
+        registry: registry.clone(),
+        cache: None,
+        mode: mode.clone(),
+        bus: bus.clone(),
+        config: cfg_arc.clone(),
+        satellites: satellite_registry.clone(),
+    });
     let app = router(state);
     let listener = tokio::net::TcpListener::bind(&cli.api_addr).await?;
     info!(addr = %cli.api_addr, "api server listening");
@@ -214,7 +215,6 @@ let state: Arc<AppState> = Arc::new(AppState {
         }))
     } else { None };
 
-    // Supervisor run (let-it-crash) + Ctrl+C
     let sup_handle = tokio::spawn(supervisor.run());
     tokio::signal::ctrl_c().await?;
     info!("shutdown signal received");

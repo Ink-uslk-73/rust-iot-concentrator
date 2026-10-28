@@ -1,4 +1,4 @@
-﻿//! src/core/balancer.rs - per-NUMA-node degradation under load.
+//! src/core/balancer.rs - per-NUMA-node degradation under load.
 //!
 //! Fixes vs v3.x:
 //! - per-node, not sum over 128 cores.
@@ -224,7 +224,7 @@ mod tests {
     }
 
     fn make_with_state(v: Vec<f64>, mode: Mode) -> (Balancer, ModeState) {
-        let (bus, _rx) = Bus::new(64, 64, 64, 64);
+        let (bus, _rx) = Bus::new(64, 64, 64, 64, std::sync::Arc::new(crate::metrics::OverheadMetrics::new()));
         let ms = ModeState::with_mode(mode);
         let b = Balancer::new(ms.clone(), bus, Box::new(MockCpu::new(v)), cfg());
         (b, ms)
@@ -268,7 +268,7 @@ mod tests {
 
     #[test]
     fn hard_overload_alerts_but_does_not_degrade() {
-        let (bus, mut rx) = Bus::new(64, 64, 64, 64);
+        let (bus, mut rx) = Bus::new(64, 64, 64, 64, std::sync::Arc::new(crate::metrics::OverheadMetrics::new()));
         let ms = ModeState::with_mode(Mode::HardOnly);
         let mut v = vec![0.1; 12];
         for x in &mut v[0..4] {

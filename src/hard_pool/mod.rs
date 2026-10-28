@@ -1,4 +1,4 @@
-﻿//! src/hard_pool/mod.rs - HARD thread pool (RT, bounded, backpressure).
+//! src/hard_pool/mod.rs - HARD thread pool (RT, bounded, backpressure).
 //!
 //! Fixes vs v3.x:
 //! - bounded queue (not unbounded SegQueue) -> backpressure, no drop.
@@ -183,7 +183,7 @@ mod tests {
     use std::time::Duration;
 
     fn make_pool(threads: usize, cap: usize) -> Arc<HardPool> {
-        let (bus, _rx) = Bus::new(64, 64, 64, 64);
+        let (bus, _rx) = Bus::new(64, 64, 64, 64, std::sync::Arc::new(crate::metrics::OverheadMetrics::new()));
         HardPool::start(threads, 0..threads, cap, bus).unwrap()
     }
 
