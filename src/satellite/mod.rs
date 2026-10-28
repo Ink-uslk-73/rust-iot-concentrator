@@ -1,5 +1,6 @@
 //! src/satellite/mod.rs - Satellite heartbeat (PLATE-A/B/C + AIG-502).
 
+pub mod heartbeat;
 pub mod watchdog;
 
 use std::collections::HashMap;

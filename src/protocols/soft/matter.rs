@@ -1,4 +1,4 @@
-﻿//! src/protocols/soft/matter.rs - Matter (controller).
+//! src/protocols/soft/matter.rs - Matter (controller).
 use crate::core::mode_switch::Priority;
 use crate::protocols::{ProtocolAdapter, PublishFn};
 
@@ -13,6 +13,7 @@ impl Default for MatterAdapter {
 }
 
 impl ProtocolAdapter for MatterAdapter {
+    fn heartbeat(&self) -> Option<&'static str> { Some("PLATE-B") }
     fn name(&self) -> &'static str { "matter" }
     fn priority(&self) -> Priority { Priority::Soft }
     fn start(&self, _publish: PublishFn) -> Result<(), String> { Ok(()) }

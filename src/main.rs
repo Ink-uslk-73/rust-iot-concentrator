@@ -1,4 +1,4 @@
-//! src/main.rs - entrypoint: CLI, wiring, supervisor, satellite watchdog.
+//! src/main.rs - entrypoint: CLI, wiring, supervisor, satellite watchdog, heartbeat.
 
 use std::sync::{Arc, RwLock};
 use clap::{Parser, Subcommand};
@@ -12,6 +12,7 @@ use rust_iot_concentrator::core::mode_switch::{Mode, ModeState, Priority};
 use rust_iot_concentrator::gateway::GatewayConfig;
 use rust_iot_concentrator::metrics::OverheadMetrics;
 use rust_iot_concentrator::protocols;
+use rust_iot_concentrator::satellite::heartbeat::spawn_heartbeat;
 use rust_iot_concentrator::satellite::watchdog::SatelliteWatchdog;
 use rust_iot_concentrator::satellite::SatelliteRegistry;
 use rust_iot_concentrator::storage::pg;
@@ -86,6 +87,11 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
     let (signals_rx, telemetry_rx, status_rx, diag_rx) = bus_rx.split();
     let (dispatcher, domain_receivers) = Dispatcher::new(mode.clone(), bus.clone(), 256);
 
+    // Satellite registry + watchdog (before protocols)
+    let satellite_registry = Arc::new(SatelliteRegistry::new());
+    let sat_wd = SatelliteWatchdog::new(satellite_registry.clone(), bus.clone());
+    tokio::spawn(sat_wd.run());
+
     // Supervisor + semaphores (isolation, let-it-crash)
     let mut supervisor = Supervisor::new();
     let hard_sem = VmSemaphore::new();
@@ -149,8 +155,17 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
     info!("domains + dispatcher started");
 
     let cfg_arc = Arc::new(RwLock::new(concentrator_cfg));
+    let satellite_registry_hb = satellite_registry.clone();
     for a in protocols::create_all(&cfg_arc.read().unwrap()) {
         info!(protocol = a.name(), priority = ?a.priority(), "adapter registered");
+        if let Some(sat_name) = a.heartbeat() {
+            spawn_heartbeat(
+                satellite_registry_hb.clone(),
+                sat_name,
+                std::time::Duration::from_secs(2),
+            );
+            info!(satellite = sat_name, "heartbeat spawned");
+        }
     }
 
     match GatewayConfig::load("config/gateway.toml") {
@@ -168,11 +183,6 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
         Ok(p) => { info!("postgresql connected"); Some(p) }
         Err(e) => { warn!(error = %e, "postgresql unavailable; running in file-fallback mode"); None }
     };
-
-    // Satellite registry + watchdog
-    let satellite_registry = Arc::new(SatelliteRegistry::new());
-    let sat_wd = SatelliteWatchdog::new(satellite_registry.clone(), bus.clone());
-    tokio::spawn(sat_wd.run());
 
     let state: Arc<AppState> = Arc::new(AppState {
         pool: pool.clone(),

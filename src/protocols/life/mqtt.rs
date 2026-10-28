@@ -1,4 +1,4 @@
-﻿//! src/protocols/life/mqtt.rs - MQTT (mqtt5 broker).
+//! src/protocols/life/mqtt.rs - MQTT (mqtt5 broker).
 use crate::core::mode_switch::Priority;
 use crate::protocols::{ProtocolAdapter, PublishFn};
 
@@ -13,6 +13,7 @@ impl Default for MqttAdapter {
 }
 
 impl ProtocolAdapter for MqttAdapter {
+    fn heartbeat(&self) -> Option<&'static str> { Some("PLATE-C") }
     fn name(&self) -> &'static str { "mqtt" }
     fn priority(&self) -> Priority { Priority::Life }
     fn start(&self, _publish: PublishFn) -> Result<(), String> { Ok(()) }

@@ -15,6 +15,7 @@ pub trait ProtocolAdapter: Send + Sync {
     fn name(&self) -> &'static str;
     fn priority(&self) -> Priority;
     fn start(&self, publish: PublishFn) -> Result<(), String>;
+    fn heartbeat(&self) -> Option<&'static str> { None }
 }
 
 pub fn make_publish(bus: Bus, sensor_prefix: &'static str) -> PublishFn {

@@ -26,6 +26,7 @@ impl ModbusAdapter {
 }
 
 impl ProtocolAdapter for ModbusAdapter {
+    fn heartbeat(&self) -> Option<&'static str> { Some("PLATE-A") }
     fn name(&self) -> &'static str { "modbus" }
     fn priority(&self) -> Priority { Priority::Hard }
 
