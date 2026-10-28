@@ -1,10 +1,12 @@
-//! src/main.rs - entrypoint: CLI, wiring, supervisor, satellite watchdog, heartbeat.
+//! src/main.rs - entrypoint: CLI, wiring, supervisor, satellite, cache.
 
 use std::sync::{Arc, RwLock};
+use std::time::Duration;
 use clap::{Parser, Subcommand};
 use tracing::{info, warn};
 
 use rust_iot_concentrator::api::{router, AppState};
+use rust_iot_concentrator::cache_tasks::spawn_cache_tasks;
 use rust_iot_concentrator::config::ConcentratorConfig;
 use rust_iot_concentrator::core::bus::{Bus, BusMessage, BusPayload};
 use rust_iot_concentrator::core::dispatcher::Dispatcher;
@@ -15,7 +17,9 @@ use rust_iot_concentrator::protocols;
 use rust_iot_concentrator::satellite::heartbeat::spawn_heartbeat;
 use rust_iot_concentrator::satellite::watchdog::SatelliteWatchdog;
 use rust_iot_concentrator::satellite::SatelliteRegistry;
+use rust_iot_concentrator::storage::cache::HotCache;
 use rust_iot_concentrator::storage::pg;
+use rust_iot_concentrator::storage::raw::RawStore;
 use rust_iot_concentrator::supervisor::Supervisor;
 use rust_iot_concentrator::vm::hard::HardDomain;
 use rust_iot_concentrator::vm::life::LifeDomain;
@@ -61,38 +65,37 @@ async fn main() -> anyhow::Result<()> {
 }
 
 async fn run(cli: Cli) -> anyhow::Result<()> {
+    // 1. Config
     let concentrator_cfg = ConcentratorConfig::load(&cli.config)
         .map_err(|e| anyhow::anyhow!("config: {}", e))?;
     let (mc, mr) = concentrator_cfg.modbus.current_paths();
     info!(mode = %concentrator_cfg.modbus.mode, config = %mc, registers = %mr, "modbus paths");
 
+    // 2. Bus + metrics + registry + self-telemetry
     let metrics = Arc::new(OverheadMetrics::new());
     let registry = Arc::new(rust_iot_concentrator::metrics::registry::Registry::new());
     let mut self_tel = rust_iot_concentrator::metrics::self_telemetry::SelfTelemetry::new();
     let registry_bg = registry.clone();
     tokio::spawn(async move {
-        let mut tick = tokio::time::interval(std::time::Duration::from_secs(2));
-        loop {
-            tick.tick().await;
-            self_tel.publish(&registry_bg);
-        }
+        let mut tick = tokio::time::interval(Duration::from_secs(2));
+        loop { tick.tick().await; self_tel.publish(&registry_bg); }
     });
 
     let (bus, bus_rx) = Bus::new(256, 4096, 128, 128, metrics.clone());
     info!("bus initialized");
 
+    // 3. Mode + dispatcher
     let mode = ModeState::with_mode(Mode::All);
     info!(mode = mode.get().name(), "initial mode");
-
     let (signals_rx, telemetry_rx, status_rx, diag_rx) = bus_rx.split();
     let (dispatcher, domain_receivers) = Dispatcher::new(mode.clone(), bus.clone(), 256);
 
-    // Satellite registry + watchdog (before protocols)
+    // 4. Satellite registry + watchdog
     let satellite_registry = Arc::new(SatelliteRegistry::new());
     let sat_wd = SatelliteWatchdog::new(satellite_registry.clone(), bus.clone());
     tokio::spawn(sat_wd.run());
 
-    // Supervisor + semaphores (isolation, let-it-crash)
+    // 5. Supervisor + semaphores
     let mut supervisor = Supervisor::new().with_bus(bus.clone());
     let hard_sem = VmSemaphore::new();
     let soft_sem = VmSemaphore::new();
@@ -106,47 +109,27 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
     std::mem::forget(dummy_tx_soft);
     std::mem::forget(dummy_tx_life);
 
-    // Domains (with semaphores, mpsc per domain)
+    // 6. Domains
     let hard_bus = bus.clone();
     let hard_sem2 = hard_sem.clone();
     supervisor.spawn(async move {
-        run_domain_with_sem(
-            HardDomain::default(),
-            domain_receivers.hard,
-            domain_receivers.commands,
-            hard_bus,
-            std::time::Duration::from_millis(10),
-            hard_sem2,
-        ).await;
+        run_domain_with_sem(HardDomain::default(), domain_receivers.hard,
+            domain_receivers.commands, hard_bus, Duration::from_millis(10), hard_sem2).await;
     });
-
     let soft_bus = bus.clone();
     let soft_sem2 = soft_sem.clone();
     supervisor.spawn(async move {
-        run_domain_with_sem(
-            SoftDomain::default(),
-            domain_receivers.soft,
-            dummy_rx_soft,
-            soft_bus,
-            std::time::Duration::from_millis(100),
-            soft_sem2,
-        ).await;
+        run_domain_with_sem(SoftDomain::default(), domain_receivers.soft,
+            dummy_rx_soft, soft_bus, Duration::from_millis(100), soft_sem2).await;
     });
-
     let life_bus = bus.clone();
     let life_sem2 = life_sem.clone();
     supervisor.spawn(async move {
-        run_domain_with_sem(
-            LifeDomain::default(),
-            domain_receivers.life,
-            dummy_rx_life,
-            life_bus,
-            std::time::Duration::from_millis(1000),
-            life_sem2,
-        ).await;
+        run_domain_with_sem(LifeDomain::default(), domain_receivers.life,
+            dummy_rx_life, life_bus, Duration::from_millis(1000), life_sem2).await;
     });
 
-    // Dispatcher
+    // 7. Dispatcher loop
     supervisor.spawn(async move {
         if let Err(e) = dispatcher.run(telemetry_rx, signals_rx, status_rx, diag_rx).await {
             warn!("dispatcher error: {}", e);
@@ -154,20 +137,18 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
     });
     info!("domains + dispatcher started");
 
+    // 8. Protocols + satellite heartbeats
     let cfg_arc = Arc::new(RwLock::new(concentrator_cfg));
     let satellite_registry_hb = satellite_registry.clone();
     for a in protocols::create_all(&cfg_arc.read().unwrap()) {
         info!(protocol = a.name(), priority = ?a.priority(), "adapter registered");
         if let Some(sat_name) = a.heartbeat() {
-            spawn_heartbeat(
-                satellite_registry_hb.clone(),
-                sat_name,
-                std::time::Duration::from_secs(2),
-            );
+            spawn_heartbeat(satellite_registry_hb.clone(), sat_name, Duration::from_secs(2));
             info!(satellite = sat_name, "heartbeat spawned");
         }
     }
 
+    // 9. Gateway config
     match GatewayConfig::load("config/gateway.toml") {
         Ok(cfg) => {
             if let Err(e) = cfg.validate() {
@@ -179,63 +160,71 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
         Err(e) => warn!("gateway config load failed: {}", e),
     }
 
+    // 10. PostgreSQL
     let pool = match pg::connect(&cli.database_url).await {
         Ok(p) => { info!("postgresql connected"); Some(p) }
-        Err(e) => { warn!(error = %e, "postgresql unavailable; running in file-fallback mode"); None }
+        Err(e) => { warn!(error = %e, "postgresql unavailable; file-fallback mode"); None }
     };
+
+    // 11. Cache (Redis optional) + cache_tasks (flush + sync)
+    let cache: Option<Arc<HotCache>> = {
+        let cfg = cfg_arc.read().unwrap();
+        if cfg.cache.enabled {
+            match (cfg.cache.url.as_deref(), cfg.cache.ttl_sec) {
+                (Some(url), Some(ttl)) => match HotCache::new(url, ttl) {
+                    Ok(c) => { info!(url, ttl, "redis cache enabled"); Some(Arc::new(c)) }
+                    Err(e) => { warn!("redis init: {}", e); None }
+                },
+                _ => { warn!("cache.enabled=true but url/ttl missing"); None }
+            }
+        } else { None }
+    };
+
+    let raw_path = cfg_arc.read().unwrap().cache.raw_path.clone()
+        .unwrap_or_else(|| "storage/raw/telemetry.cbor".into());
+    let raw = Arc::new(RawStore::new(&raw_path));
+    let flush_sec = cfg_arc.read().unwrap().cache.flush_interval_sec.unwrap_or(60);
+    spawn_cache_tasks(
+        cache.clone(),
+        raw,
+        pool.clone(),
+        bus.clone(),
+        Duration::from_secs(flush_sec),
+        Duration::from_secs(60),
+    );
+
+    // 12. API
+    let api_addr = cfg_arc.read().unwrap().api.addr.clone()
+        .unwrap_or_else(|| cli.api_addr.clone());
 
     let state: Arc<AppState> = Arc::new(AppState {
         pool: pool.clone(),
         root: std::path::PathBuf::from("."),
         metrics: metrics.clone(),
         registry: registry.clone(),
-        cache: None,
+        cache: cache.clone(),
         mode: mode.clone(),
         bus: bus.clone(),
         config: cfg_arc.clone(),
         satellites: satellite_registry.clone(),
     });
     let app = router(state);
-    let api_addr = cfg_arc.read().unwrap().api.addr.clone()
-    .unwrap_or_else(|| cli.api_addr.clone());
     let listener = tokio::net::TcpListener::bind(&api_addr).await?;
     info!(addr = %api_addr, "api server listening");
-
-      let api_handle = tokio::spawn(async move {
+    let api_handle = tokio::spawn(async move {
         if let Err(e) = axum::serve(listener, app).await {
             warn!("api server error: {}", e);
         }
     });
 
-    let sync_handle = if let Some(pool) = pool.clone() {
-        let pool = pool.clone();
-        Some(tokio::spawn(async move {
-            let mut tick = tokio::time::interval(std::time::Duration::from_secs(60));
-            loop {
-                tick.tick().await;
-                let root = std::path::Path::new(".");
-                match rust_iot_concentrator::storage::fallback::sync_baselines(&pool, root).await {
-                    Ok(n) if n > 0 => info!(count = n, "synced baselines"),
-                    Ok(_) => {}
-                    Err(e) => warn!("sync_baselines: {}", e),
-                }
-                match rust_iot_concentrator::storage::fallback::sync_events(&pool, root).await {
-                    Ok(n) if n > 0 => info!(count = n, "synced events"),
-                    Ok(_) => {}
-                    Err(e) => warn!("sync_events: {}", e),
-                }
-            }
-        }))
-    } else { None };
-
+    // 13. Supervisor run + Ctrl+C
     let sup_handle = tokio::spawn(supervisor.run());
     tokio::signal::ctrl_c().await?;
     info!("shutdown signal received");
     let _ = bus.send(BusMessage::new("main", Priority::Hard, BusPayload::Shutdown)).await;
-    tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+    tokio::time::sleep(Duration::from_millis(100)).await;
 
     api_handle.abort();
-    if let Some(h) = sync_handle { h.abort(); }
     sup_handle.abort();
     info!("shutdown complete");
     Ok(())

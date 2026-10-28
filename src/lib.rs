@@ -1,3 +1,4 @@
+pub mod cache_tasks;
 pub mod aig;
 pub mod api;
 pub mod bot;

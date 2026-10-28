@@ -7,12 +7,28 @@ pub struct ConcentratorConfig {
     pub modbus: ModbusConfig,
     #[serde(default)]
     pub api: ApiConfig,
+    #[serde(default)]
+    pub cache: CacheConfig,
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
 pub struct ApiConfig {
     #[serde(default)]
     pub addr: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct CacheConfig {
+    #[serde(default)]
+    pub enabled: bool,
+    #[serde(default)]
+    pub url: Option<String>,
+    #[serde(default)]
+    pub ttl_sec: Option<u64>,
+    #[serde(default)]
+    pub flush_interval_sec: Option<u64>,
+    #[serde(default)]
+    pub raw_path: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -49,19 +65,18 @@ mod tests {
 
     #[test]
     fn paths_production() {
-        let cfg = ModbusConfig {
+        let c = ModbusConfig {
             mode: "production".into(),
-            production: ModbusPaths { config_path: "/prod/c.json".into(), registers_path: "/prod/r.json".into() },
-            emulation: ModbusPaths { config_path: "emu/c.json".into(), registers_path: "emu/r.json".into() },
+            production: ModbusPaths { config_path: "/p/c.json".into(), registers_path: "/p/r.json".into() },
+            emulation: ModbusPaths { config_path: "e/c.json".into(), registers_path: "e/r.json".into() },
         };
-        let (c, _r) = cfg.current_paths();
-        assert_eq!(c, "/prod/c.json");
+        let (p, _) = c.current_paths();
+        assert_eq!(p, "/p/c.json");
     }
 
     #[test]
-    fn api_default_none() {
-        let api = ApiConfig::default();
-        assert!(api.addr.is_none());
-    }
-}
+    fn api_default_none() { assert!(ApiConfig::default().addr.is_none()); }
 
+    #[test]
+    fn cache_default_disabled() { assert!(!CacheConfig::default().enabled); }
+}
