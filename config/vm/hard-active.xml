@@ -13,9 +13,7 @@
     <vcpupin vcpu='7' cpuset='7'/>
     <emulatorpin cpuset='32-47'/>
   </cputune>
-  <numatune>
-    <memory mode='strict' nodeset='0'/>
-  </numatune>
+  <numatune><memory mode='strict' nodeset='0'/></numatune>
   <os><type arch='x86_64'>hvm</type><boot dev='hd'/></os>
   <features><acpi/><apic/></features>
   <cpu mode='host-passthrough'/>
