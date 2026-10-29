@@ -117,3 +117,13 @@ TimescaleDB). Отказ любого слоя не роняет концент�
   отправляются при восстановлении (`StoreForward`, P2.18c-peer).
 - **Supervision tree (let-it-crash)** — дерево задач с автоперезапуском при панике
   (`Supervisor::spawn_restartable`, P2.18b), `PanicCounter` (P2.18c).
+## Термины проекта
+
+- **PLATE-A (Hard)** — Moxa **AIG-502**: Intel i7, Modbus RTU/ASCII/TCP,
+  31 сенсор на порт, edge-компьютер, облако. Готовое устройство в шасси 4U-19.
+  Роль: роутер Modbus, fog-узел.
+- **PLATE-B (Soft)** — умный, автономный; **TODO: спецификация не готова.**
+  Роль: вычисления, «дружба» с PLATE-C (горизонтальный обмен).
+- **PLATE-C (Life)** — несущая + ATX (ASUS ProArt X870E-Creator) + FPGA SmartNIC
+  (50 Вт), RTC DS3231SN, watchdog CH32V003, power mux (резерв-1/2).
+  Роль: **МИД** — экспорт/импорт, СУБД, связь с облаками, шлюз.
