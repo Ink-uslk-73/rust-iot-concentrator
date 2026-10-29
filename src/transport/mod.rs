@@ -9,6 +9,7 @@
 pub mod nop;
 pub mod shmem;
 pub mod vsock;
+pub mod reconnect;
 
 use serde::{Deserialize, Serialize};
 
