@@ -10,11 +10,11 @@
 
 ## Решение
 
-- **PLATE-A (Hard) = Moxa AIG-502**: Intel i7, Modbus RTU/ASCII/TCP клиент
+- **PLATE-A (Hard) = Moxa AIG-502**: Intel i7, **31 сенсор на порт**, Modbus RTU/ASCII/TCP клиент
   (функции 1, 2, 3, 4, 5, 6, 15, 16, 23), до 31 ведомого на порт, edge computing,
   интеграция в облако. Готовое устройство в шасси 4U-19.
-- **PLATE-B (Soft)**: **TODO: спецификация не готова.**
-- **PLATE-C (Life) = несущая + ATX (ASUS) + FPGA SmartNIC**:
+- **PLATE-B (Soft)**: умный, автономный; **TODO: спецификация не готова.**
+- **PLATE-C (Life) = несущая + ATX (ASUS) + FPGA SmartNIC** (МИД, экспорт/импорт):
   SmartNIC/AI (FPGA 50 Вт), данные, связь с облаками, шлюз.
   RTC DS3231SN, watchdog CH32V003, power mux (резерв-1/2).
 
