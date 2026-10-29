@@ -92,7 +92,7 @@ This concentrator is a **Fog node** (edge-DC), not just a protocol converter:
 
 ## Статус проекта
 
-**R&D (research & development).** Архитектура (HARD/SOFT/LIFE, triple redundancy, CORE: Redis/Raw/TimescaleDB) зафиксирована. Реализация  поэтапная: контракты и эмуляторы -> реальное железо. AIG-502  в продакшене, пока используется эмулятор (`emulation/aig-502/`). PLATE-C (LIFE)  часть каналов в разработке.
+**R&D (research & development).** Архитектура (HARD/SOFT/LIFE, triple redundancy, CORE: Redis/Raw/TimescaleDB) зафиксирована. Реализация  поэтапная: контракты и эмуляторы -> реальное железо. AIG-502 — в продакшене, пока используется эмулятор (emulation/aig-502/). PLATE-A (HARD) — полевые протоколы + AIG-502 (эмулятор, пока железо не готово). PLATE-B (SOFT) — умный дом (Matter/Zigbee/Thread/BLE), эмуляторы, в разработке. PLATE-C (LIFE) — скоростные каналы (оптика, WiFi, DAS/JBOD, бэки, облака), часть каналов в разработке. PLATE-A (HARD)  полевые протоколы + AIG-502 (эмулятор, пока железо не готово). PLATE-B (SOFT)  умный дом (Matter/Zigbee/Thread/BLE), эмуляторы, в разработке. PLATE-C (LIFE)  скоростные каналы (оптика, WiFi, DAS/JBOD, бэки, облака), часть каналов в разработке.
 
 ## Системотехника (интерконнект и питание)
 
