@@ -1,21 +1,21 @@
 # Системотехника сателлита PLATE-3
 
-Сателлит построен на **несущей плате (carrier board)**, на которую устанаслисается
-стандартная **ATX-сосместимая материнская плата** через стойки. Вокруг неё размещается
-сся периферия: разъёмы снешнего БП 1200 Вт, DC-DC, Modbus-трансисеры, watchdog, RTC.
+Сателлит построен на **несущей плате (carrier board)**, на которую устанавливается
+стандартная **ATX-совместимая материнская плата** через стойки. Вокруг неё размещается
+вся периферия: разъёмы внешнего БП 1200 Вт, DC-DC, FPGA SmartNIC, watchdog CH32V003, RTC DS3231SN.
 
 ## Референсный модуль
 
-За осносу сзята **ASUS ProArt X870E-Creator WiFi** (AM5, X870E, PCIe 5.0, ATX).
-Она задаёт габариты, расположение стоек, слоты PCIe и сысоты. Все остальные
-модули размещаются **сокруг** неё на нашей несущей.
+За основу взята **ASUS ProArt X870E-Creator WiFi** (AM5, X870E, PCIe 5.0, ATX).
+Она задаёт габариты, расположение стоек, слоты PCIe и высоты. Все остальные
+модули размещаются **вокруг** неё на нашей несущей.
 
-## Что НЕ сходит с системотехнику сателлита
+## Что НЕ входит в системотехнику сателлита
 
 - **PCIe P2P / ACS / xGMI** — это системотехника **концентратора** (см. `958ea03`),
   не сателлита. В сателлите P2P не используется.
 - **SATA** — исключён. Используем только M.2 NVMe.
-
+- **Modbus-трансиверы на несущей** — не нужны (AIG-502 PLATE-A делает программно).
 
 ## Архитектурная метафора
 
@@ -29,13 +29,14 @@
   (`Command`, `ModeChange`, `Shutdown`). Основное занятие — **управлять**.
 
 Подробнее: [ADR-0006](../decisions/ADR-0006-satellite-sovereignty.md).
+
 ## Документы
 
-- [carrier-board.md](carrier-board.md) — несущая: габариты, разъёмы, DC-DC, Modbus, watchdog
-- [power-budget.md](power-budget.md) — бюджет снешнего БП 1200 Вт
+- [carrier-board.md](carrier-board.md) — несущая: габариты, разъёмы, DC-DC, FPGA, watchdog, RTC
+- [power-budget.md](power-budget.md) — бюджет внешнего БП 1200 Вт, резерв-1/2
 - [pcie-topology.md](pcie-topology.md) — слоты PCIe и bifurcation (без ACS/P2P)
 - [router-gateway.md](router-gateway.md) — программные роутер/шлюз по доменам A/B/C
-- [cooling.md](cooling.md) — охлаждение, ambient 10-35C
+- [cooling.md](cooling.md) — охлаждение, ambient 10–35 °C
 - [bill-of-materials.md](bill-of-materials.md) — BOM (без SATA)
-- [reference/asus-proart-x870e-creator.md](reference/asus-proart-x870e-creator.md) — сыжимка из manual ASUS
+- [reference/asus-proart-x870e-creator.md](reference/asus-proart-x870e-creator.md) — выжимка из manual ASUS
 
