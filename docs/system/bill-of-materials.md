@@ -21,10 +21,10 @@
 | DC-DC 12V→5V | 1 | Modbus, RTC |
 | DC-DC 12V→3.3V | 1 | watchdog, логика |
 | DC-DC 12V→3.3V (изолир.) | 1 | RS-485/232 развязка |
-| Modbus RS-485 трансивер | TODO | кол-во каналов |
-| Modbus RS-232 трансивер | TODO | 1–2 канала |
-| Watchdog | 1 | MAX6369? (TODO) |
-| RTC | 1 | DS3231? (TODO) |
+| Watchdog | 1 | CH32V003 (GPIO) |
+| Power mux | 1 | MOSFET, резерв-1/2 |
+| FPGA SmartNIC | 1 | 50 Вт, PLATE-C |
+| RTC | 1 | DS3231SN (I2C, `dtoverlay=i2c-rtc,ds3231`) |
 | Разъёмы полевых шин | TODO | клеммники, DB9, RJ-45 ind. |
 
 ## Исключено
