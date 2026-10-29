@@ -1,4 +1,4 @@
-﻿//! src/monitoring/mod.rs - per-core CPU collection.
+//! src/monitoring/mod.rs - per-core CPU collection.
 pub mod ebpf_cpu;
 pub mod fallback;
 
@@ -50,7 +50,7 @@ mod tests {
     #[test]
     fn avg_simple() {
         assert_eq!(avg(&[0.0, 1.0]), 0.5);
-        assert_eq!(avg(&[0.2, 0.4, 0.6]), 0.4);
+        assert!((avg(&[0.2, 0.4, 0.6]) - 0.4).abs() < 1e-9, "float avg");
     }
 
     #[test]

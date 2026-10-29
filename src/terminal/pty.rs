@@ -1,4 +1,4 @@
-﻿//! src/terminal/pty.rs - PTY wrapper via portable-pty.
+//! src/terminal/pty.rs - PTY wrapper via portable-pty.
 
 use std::io::Write;
 
@@ -93,6 +93,7 @@ impl PtyHandle {
 mod tests {
     use super::*;
 
+    #[cfg(unix)]
     #[test]
     fn spawn_echo_and_write() {
         let mut h = PtyHandle::spawn("/bin/sh", &["-c", "echo hello"]).unwrap();

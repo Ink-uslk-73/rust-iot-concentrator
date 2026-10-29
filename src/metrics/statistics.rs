@@ -1,4 +1,4 @@
-﻿//! src/metrics/statistics.rs - aggregates for "Statistics" section.
+//! src/metrics/statistics.rs - aggregates for "Statistics" section.
 
 use std::collections::HashMap;
 use std::collections::VecDeque;
@@ -133,7 +133,7 @@ mod tests {
         for v in 1..=100 {
             s.push("x", Window::M1, v as f64);
         }
-        assert_eq!(s.stats("x", Window::M1).unwrap().p95, 95.0);
+        assert_eq!(s.stats("x", Window::M1).unwrap().p95, 97.0, "nearest-rank on window 60 (41..=100) -> 97");
     }
 
     #[test]

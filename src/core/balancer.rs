@@ -49,6 +49,7 @@ pub struct Balancer {
     cfg: BalancerConfig,
     high_streak: u32,
     low_streak: u32,
+    last_auto: Option<Mode>,
 }
 
 impl Balancer {
@@ -58,6 +59,7 @@ impl Balancer {
         cpu: Box<dyn CpuSource>,
         cfg: BalancerConfig,
     ) -> Self {
+        let initial = mode.get();
         Self {
             mode,
             bus,
@@ -65,6 +67,7 @@ impl Balancer {
             cfg,
             high_streak: 0,
             low_streak: 0,
+            last_auto: Some(initial),
         }
     }
 
@@ -86,6 +89,14 @@ impl Balancer {
         }
 
         let current = self.mode.get();
+        if let Some(last) = self.last_auto {
+            if current != last {
+                self.high_streak = 0;
+                self.low_streak = 0;
+                return None;
+            }
+        }
+
         let overloaded = life > self.cfg.critical_threshold
             || soft > self.cfg.critical_threshold;
 
@@ -149,9 +160,9 @@ impl Balancer {
         None
     }
 
-    fn try_set(&self, expected: Mode, new: Mode) -> bool {
+    fn try_set(&mut self, expected: Mode, new: Mode) -> bool {
         match self.mode.compare_exchange(expected, new) {
-            Ok(_) => true,
+            Ok(_) => { self.last_auto = Some(new); true }
             Err(_actual) => false,
         }
     }
