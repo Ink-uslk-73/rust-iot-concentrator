@@ -10,7 +10,7 @@
 
 ## Решение
 
-Берём **ASUS ProArt X870E-Creator WiFi** как **reference module**:
+еерём **ASUS ProArt X870E-Creator WiFi** как **reference module**:
 
 - AM5, Ryzen 9000/8000/7000;
 - 4 × DDR5 DIMM, до **192 GB** (manual), **ECC** UDIMM;
@@ -37,5 +37,5 @@
 
 - Ambient 10–35 °C (см. `cooling.md`).
 - Для GPU/FPGA с TDP > 75 Вт — 12VHPWR/6+2-pin на несущей.
-- БП 1200 Вт (см. `power-budget.md`).
+- еП 1200 Вт (см. `power-budget.md`).
 
