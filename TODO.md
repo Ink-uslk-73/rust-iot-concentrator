@@ -178,3 +178,20 @@
 ## Прочее   [ ]
 - [ ] docs/glossary.md  обновлять при новых терминах
 - [ ] CI: cargo check + cargo test на каждый PR
+
+> **Статус: R&D.** Контракты фиксируются раньше реализации. Эмуляторы  штатно.
+
+## P2.18c  агент сателлита + store & forward + PCIe P2P   [ ]
+- [ ] trait PeerLink (эмулятор: shared memory / Unix socket; реальное: PCIe P2P)
+- [ ] агент на сателлите: alive.<PLATE> раз в 1 с + автономная диагностика
+- [ ] локальный Raw на сателлите (CBOR, 10 МБ, 24 ч)  store & forward
+- [ ] досылка Raw в CORE по PCIe P2P при оживлении концентратора
+- [ ] тест: разрыв PCIe P2P -> alive стареет -> health_check = false -> Raw пишется локально -> P2P восстановлен -> Raw дослан
+- [ ] системотехнические требования к железу: root complex P2P, ACS, IOMMU, BIOS
+
+## P3.19  AIG-502 failover (эмулятор -> реальное железо)   [ ]
+- [ ] trait Aig502 + Aig502Emulator (сейчас)
+- [ ] contract-тесты: эмулятор и реальный AIG-502 (когда появится)
+- [ ] Modbus TCP slave на PLATE-A как fallback (внутри HARD-пути)
+- [ ] snapshot последней телеметрии (Redis -> AIG-502)
+- [ ] трёхуровневое питание AIG-502 (свой БП -> PCIe -> ИБП)
