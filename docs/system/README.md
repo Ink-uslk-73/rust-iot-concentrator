@@ -20,7 +20,7 @@
 
 - [carrier-board.md](carrier-board.md) — несущая: габариты, разъёмы, DC-DC, Modbus, watchdog
 - [power-budget.md](power-budget.md) — бюджет внешнего БП 1200 Вт
-- [pcie-topology.md](pcie-topology.md) — слоты PCIe и bifurcation (без PCS/P2P)
+- [pcie-topology.md](pcie-topology.md) — слоты PCIe и bifurcation (без ACS/P2P)
 - [router-gateway.md](router-gateway.md) — программные роутер/шлюз по доменам A/B/C
 - [cooling.md](cooling.md) — охлаждение, ambient 10-35C
 - [bill-of-materials.md](bill-of-materials.md) — BOM (без SATA)
