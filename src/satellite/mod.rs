@@ -83,3 +83,5 @@ impl SatelliteRegistry {
 impl Default for SatelliteRegistry {
     fn default() -> Self { Self::new() }
 }
+pub mod satellite_id;
+pub mod peer_agent;
