@@ -1,202 +1,103 @@
-# TODO - rust-iot-concentrator
+# TODO — rust-iot-concentrator
 
-Приоритеты: P0 - критично, P1 - высокий, P2 - средний, P3 - низкий.
+Приоритеты: **P0** критично, **P1** высокий, **P2** средний, **P3** низкий, **P4** on demand.
 
-## P0 - блокирует production
+**Формат:** `[PN] <путь> — <задача> (status)`.
 
-- [x] **P0.5** Группировка устройств по порту.
-- [x] **P0.7** `poll_ms` из `registers.json` + валидация `quantity <= 125`.
+## P0 — блокирует production
 
-## P1 - высокая ценность
+- [x] **P0.5** `src/protocols/hard/modbus_config.rs` — группировка устройств по порту
+- [x] **P0.7** `src/protocols/hard/modbus_config.rs` — `poll_ms` из `registers.json` + валидация `quantity <= 125`
 
-- [x] **P1.1** AIG-502 REST (client, drift, ATT&CK, poller).
-- [x] **P1.3** `cargo test` - все тесты.
-- [ ] **P1.4** `tokio-modbus` 0.17 (переиспользование `Context`, 1 open на порт).
-- [x] **P1.5** TimescaleDB (через shell, после UI).
-  - `scripts/storage/install-timescaledb.sh`, `check-timescaledb.sh`, `migrate.sh`.
-  - `migrations/002_timescale.sql`: hypertable + continuous aggregates + retention + compression.
-  - **Где:** STORAGE VM (node 1, cores 96-127).
-  - **Осторожно:** `start_offset` continuous aggregate > `drop_after` retention.
-- [ ] **P1.6** NUMA-aware `transport/`.
-  - shmem-ring на node producer (HARD -> node 0).
-  - vsock для cross-node (CORE <-> SOFT/LIFE/STORAGE), батчинг.
-  - TCP loopback - не использовать для HARD.
-  - **Зависит от:** P2.11-P2.12 (вынос в VM).
-  - [ ] **P1.7** Overhead metrics (added latency, throughput, jitter, buffer).
-  - `src/metrics/overhead.rs`: `OverheadMetrics` (atomic counters).
-  - HARD: < 1 мс (`modbus.rs` → `bus.send`).
-  - API: < 1 мс (`api/` handler).
-  - SSE: jitter < 10 мс.
-  - Bus buffer: < 70% (warning), > 90% (critical).
-  - `GET /api/v1/metrics/overhead` (JSON).
-  - Alert в diagnostics при превышении порогов.
-  - **Зависит от:** P2.2 (UI) — чтобы отображать метрики.
-  - **До** P2.11–P2.12 (VM) — чтобы знать overhead до выноса.
+## P1 — высокая ценность
 
-## P2 - средний приоритет
+- [x] **P1.1** `src/aig/` — AIG-502 REST (client, drift, ATT&CK, poller)
+- [x] **P1.3** `cargo test` — все тесты
+- [ ] **P1.4** `src/protocols/hard/modbus.rs` — `tokio-modbus` 0.17 (Context, 1 open/порт)
+- [x] **P1.5** `migrations/002_timescale.sql` — TimescaleDB hypertable + continuous aggregates + retention
+- [ ] **P1.6** `src/transport/{shmem,vsock}.rs` — NUMA-aware transport (DONE: mod/nop/shmem/vsock; **долг:** real SPSC ring в `shmem`, vsock Linux)
+- [x] **P1.7** `src/metrics/overhead.rs` — OverheadMetrics (HARD < 1 мс, Bus buffer < 70%/90%)
 
-- [x] **P2.2** Дашборд Svelte (`ui/`): Dashboard, ModeSwitch, Telemetry, Events, Terminal, Help (modal, tooltips, autocomplete, thresholds). Встроен в бинарник (`rust-embed`).
-- [x] **P2.11** Вынести SOFT в VM (cores 72-95, node 1).
-  - `<vcpupin>` + `<numatune mode='strict' nodeset='1'>`.
-  - `MPOL_BIND`, shmem на node 1.
-  - **Зависит от:** `lspci -v` (подтвердить PLATE-B на node 1).
-- [x] **P2.12** Вынести LIFE в VM (cores 8-31, node 0).
-  - `<vcpupin>` + `<numatune mode='strict' nodeset='0'>`.
-  - `MPOL_BIND`, shmem на node 0.
-  - **Зависит от:** `lspci -v` (подтвердить PLATE-C на node 0).
-- [x] **P2.13** Единая модель эксплуатации: все домены - VM.
-  - **Ограничение:** делегирование ядер **только внутри ноды** (cross-node запрещён для HARD).
-  - `virsh setvcpus --live` (внутри ноды), cgroup v2.
-- [x] **P2.14** NUMA health-check.
-  - `numastat -c qemu-kvm` -> `numa_foreign` должен быть 0.
-  - Alert (`DiagLevel::Critical`) при `numa_foreign > 0`.
-  - На housekeeping ядрах (32-47), **не** на HARD (0-7).
-  - `lspci -v` - **один раз** при развёртывании, результат в `config/numa.toml`.
-- [x] **P2.15** HARD overflow (Вариант C).
-  - HARD standby (node 1) **не запущен** в норме.
-  - При перегрузке node 0 - включить standby, разделить устройства (`/dev/ttyM1`).
-  - При спаде - выключить standby.
-  - **Не миграция** - разделение устройств.
+## P2 — средний приоритет
 
-## P3 - низкий приоритет
+- [x] **P2.2** `ui/` — Svelte dashboard (Dashboard, ModeSwitch, Telemetry, Events, Terminal, Help)
+- [x] **P2.11** `vm/soft` — SOFT в VM (cores 72-95, node 1)
+- [x] **P2.12** `vm/life` — LIFE в VM (cores 8-31, node 0)
+- [x] **P2.13** `vm/` — единая модель эксплуатации (все домены — VM)
+- [x] **P2.14** `src/numa/` — NUMA health-check (`numa_foreign == 0`)
+- [x] **P2.15** `vm/hard` — HARD overflow (Вариант C)
+- [ ] **P2.16** `emulation/aig-502/` — эмуляция AIG-502 (com0com + OpenModSim): `config.json`, `registers.json`, `README.md`; `scripts/emulation/setup-com0com.ps1`, `check-emulation.ps1`
+- [x] **P2.16c** `ui/ConfigMode.svelte` + `src/api/` — UI-переключатель production/emulation
+- [ ] **P2.16d** `scripts/emulation/` — установка com0com + OpenModSim (ручной шаг)
+- [x] **P2.17** `src/metrics/self_telemetry.rs` — SelfTelemetry (CPU, mem, disks, NUMA, temps)
+- [x] **P2.18b** `src/supervisor.rs` — `spawn_restartable` (фабрика + catch_unwind + backoff + Bus diag)
+- [x] **P2.18c** `src/transport/reconnect.rs` — `ReconnectSchedule` (equal jitter); `src/supervisor.rs` — `PanicCounter` + Bus diag `n=`
+- [ ] **P2.18c-peer** `src/transport/peer_link.rs` — real `LocalP2p::Linux` (сейчас заглушка); `src/storage/store_forward.rs` — миграция на `RawStore`
+- [x] **P2.19** `src/main.rs` — Dispatcher, cache_tasks, HotCache, RawStore, pg, SatelliteWatchdog, домены, VmSemaphore, run_domain_with_sem, api::router (восстановлен)
+- [x] **P2.20c** `src/satellite/heartbeat.rs` — реальный heartbeat `alive.<PLATE>` (health_check + spawn_heartbeat)
+- [ ] **P2.21** `src/config/` — `[api] addr` из TOML (fallback `--api-addr`)
 
-- [ ] **P3.8** `README.md` + `CHANGELOG.md`.
-- [ ] **P3.9** Профилирование NUMA (`numastat`, `perf`).
-- [ ] **P3.11** Интеграция с внешней SCADA (опционально).
-  - Концентратор отдаёт данные через API; SCADA читает.
-  - Не встраивать тяжёлую SCADA в LIFE.
+## P3 — низкий приоритет
 
-## Отдельные репозитории
+- [ ] **P3.8** `README.md` + `CHANGELOG.md` — актуализировать
+- [ ] **P3.9** `src/numa/` — профилирование NUMA (`numastat`, `perf`)
+- [ ] **P3.11** `src/api/` — интеграция с внешней SCADA (опционально)
+- [ ] **P3.12** `docs/glossary.md` — терминология: Data Concentrator vs Ethernet hub vs Communicator vs Protocol Gateway (DONE частично)
+- [x] **P3.13** `src/protocols/hard/modbus_tcp.rs` — Modbus TCP uplink (direct SCADA/HMI)
+- [ ] **P3.15** `docs/architecture.md` — Edge computing (Fog node) documentation
+- [ ] **P3.18** `ui/` — Tooltip (Pointer Events + Floating UI) + light HelpModal (DONE частично)
+- [ ] **P3.19** `src/gateway/` — AIG-502 failover: Modbus TCP slave на PLATE-C + snapshot из Redis
+- [ ] **P3.20** `src/storage/raw.rs` — Raw CBOR (10 МБ/24 ч) + TimescaleDB hypertable (1s/1m/1h)
 
-- [x] **`rust-iot-concentrator-tablet`** - Flutter-клиент.
-  - Репозиторий: https://github.com/Ink-uslk-73/rust-iot-concentrator-tablet
-  - Статус: создан, README + TODO.
+## P4 — on demand (client request)
+
+- [ ] **P4.1** `src/protocols/` — DNP3 (RS-485/Ethernet) → OPC UA/MQTT
+- [ ] **P4.2** `src/protocols/` — IEC 60870-5-104 (substation remote control)
+- [ ] **P4.3** `src/protocols/` — BACnet MSTP/IP → Modbus TCP
+- [ ] **P4.4** `src/protocols/` — LoRa/wM-Bus/Sigfox → MQTT
+- [ ] **P4.5** `src/protocols/` — G3-PLC/PRIME → MQTT/IEC 60870
+- [ ] **P4.6** `src/protocols/` — M-Bus (gas/water meters)
+- [ ] **P4.7** `src/protocols/` — Proprietary PLC (Siemens S7, Schneider, Mitsubishi, Omron) → OPC UA/MQTT
+- [ ] **P4.8** `src/protocols/` — Kafka/AMQP (enterprise integration)
+- [ ] **P4.9** `src/protocols/` — Modbus RTU → OPC UA Server
+- [ ] **P4.10** `src/protocols/` — User scripts (Lua/Python) for custom preprocessing
 
 ## Инфраструктура (один раз при развёртывании)
 
-- [ ] **INF.1** `lspci -v` на сервере -> `NUMA node` для PLATE-A/B/C/HBA -> `config/numa.toml`.
-- [ ] **INF.2** `<vcpupin>` + `<numatune mode='strict'>` для каждой VM.
-- [ ] **INF.3** `isolcpus=0-7,64-71` в GRUB (HARD active/standby).
-- [ ] **INF.4** `emulatorpin` на housekeeping cores (32-47), **не** на HARD.
+- [ ] **INF.1** `config/numa.toml` — `lspci -v` → NUMA node для PLATE-A/B/C/HBA
+- [ ] **INF.2** `vm/` — `<vcpupin>` + `<numatune mode='strict'>` для каждой VM
+- [ ] **INF.3** `GRUB` — `isolcpus=0-7,64-71` (HARD active/standby)
+- [ ] **INF.4** `vm/` — `emulatorpin` на housekeeping cores (32-47), **не** на HARD
+- [ ] **INF.5** `scripts/emulation/` — настройка эмуляции Modbus RTU (Windows): com0com + OpenModSim
+
+## Сателлиты (R&D)
+
+- [x] **PLATE-A (Hard)** = Moxa AIG-502: полевые протоколы (modbus) реальны; AIG-502 — эмулятор (продакшен, железо не готово)
+- [ ] **PLATE-B (Soft)** = умный дом (Matter/Zigbee/Thread/BLE) — **спецификация не готова**
+- [ ] **PLATE-C (Life)** = несущая + ASUS + FPGA SmartNIC — скоростные каналы (оптика, WiFi, DAS/JBOD, бэки, облака), часть в разработке
+
+## Долги
+
+- **P1.6** `src/transport/shmem.rs` — SPSC ring (Linux only)
+- **P2.18c-peer** `src/transport/peer_link.rs` — `LocalP2p::Linux` real (сейчас заглушка)
+- **P2.18c-peer** `src/storage/store_forward.rs` — миграция на `RawStore`
+- **P2.19** `src/main.rs` — разбиение на `src/app/` (config, bus, dispatcher, domains, satellite, storage, api) — **завтра, вариант B**
+- **P3.19** `src/gateway/` — AIG-502 failover (Modbus TCP slave на PLATE-C + snapshot из Redis)
+- **P3.20** `src/storage/raw.rs` — Raw CBOR (10 МБ/24 ч) + TimescaleDB hypertable (1s/1m/1h)
+- **PLATE-B (Soft)** — спецификация не готова
+- **docs** — `ADR-0005-satellite-driver-matrix.md` (таблица драйверов/СУБД/протоколов)
+- **docs** — `config/satellite/<id>.toml` (конфиги для A/B/C)
+- **Инфраструктура** — `INF.1..INF.5`
+
+## Отдельные репозитории
+
+- [x] **rust-iot-concentrator-tablet** — Flutter-клиент (создан, README + TODO)
 
 ## Сделано
 
-- [x] Модуль 1-8 (структура, core, numa, dispatcher, gateway, hard_pool, monitoring, balancer, metrics, vm, terminal, protocols, main, systemd, scripts, docs, storage, api, tests).
-- [x] P0.5, P0.7, P1.1, P1.3.
-- [x] Архитектурные решения: микро-SCADA/HMI в LIFE, не монолит; TimescaleDB (не Cassandra); NUMA-раскладка (HARD active node 0, standby node 1, SOFT node 1, LIFE node 0, STORAGE node 1); HARD overflow (Вариант C).
+- Модули 1–8 (структура, core, numa, dispatcher, gateway, hard_pool, monitoring, balancer, metrics, vm, terminal, protocols, main, systemd, scripts, docs, storage, api, tests)
+- Архитектурные решения: микро-SCADA/HMI в LIFE, TimescaleDB (не Cassandra), NUMA-раскладка (HARD active node 0, standby node 1, SOFT node 1, LIFE node 0, STORAGE node 1), HARD overflow (Вариант C)
+- P0.5, P0.7, P1.1, P1.3, P1.5, P1.7, P2.2, P2.11, P2.12, P2.13, P2.14, P2.15, P2.16c, P2.17, P2.18b, P2.18c (reconnect/PanicCounter), P2.19, P2.20c, P3.13
 
-- [ ] **P2.16** Эмуляция AIG-502 для отладки (без реального железа).
-  - **Слой 1 (Modbus RTU):** com0com (пара COM10 <-> COM11) + OpenModSim (Slave на COM11, slave ID = 1, holding registers 0-10).
-  - **Слой 2 (конфигурация):** локальные config.json (device: "COM10") + egisters.json в emulation/aig-502/.
-  - **Слой 3 (HTTP API AIG, опционально):** mock HTTP-сервер для ig/client.rs (drift, ATT&CK).
-  - **Структура:** emulation/aig-502/{config.json, registers.json, README.md}.
-  - **Инструменты:** scripts/emulation/setup-com0com.ps1, scripts/emulation/check-emulation.ps1.
-  - **Зависит от:** P0.7 (config.json/registers.json парсинг уже есть).
+> **Статус: R&D.** Контракты фиксируются раньше реализации. Эмуляторы — штатно.
 
-- [ ] **INF.5** Настройка эмуляции Modbus RTU (Windows).
-  - Установить com0com (админ, тест-подпись драйвера).
-  - Создать пару COM10 <-> COM11 (через setupg.exe или CLI).
-  - Запустить OpenModSim: RTU Slave на COM11, slave ID = 1, holding registers 0-10.
-  - Проверить: концентратор открывает COM10, читает регистры из OpenModSim.
-
-- [x] **P2.16c** UI-переключатель production/emulation (Dashboard).
-  - ConfigMode.svelte: селект production/emulation + POST /api/v1/config/mode.
-  - Показывает текущий режим (GET /api/v1/config/mode) и config_path/registers_path.
-  - **Порядок:** сразу после P2.16b (сейчас).
-  - **Зависит от:** P2.16b (API работает).
-
-- [ ] **P2.16d** Установка com0com + OpenModSim (ручной шаг, 15-20 мин).
-  - **Порядок:** после P2.16c (сначала UI-переключатель).
-  - com0com: bcdedit TESTSIGNING ON -> reboot -> setupg.exe -> pair COM10<->COM11.
-  - OpenModSim: RTU Slave on COM11, 9600 8N1, slave ID=1, holding registers 0..10.
-  - Проверка: modbus rtu read в логах концентратора.
-  - **Не автоматизируется** (GUI, драйвер).
-
-- [x] **P2.17** Self-telemetry (CPU, mem, disks, NUMA, temps).
-  - sysinfo crate (кроссплатформенный).
-  - src/metrics/self_telemetry.rs: SelfTelemetry::publish(registry).
-  - Префикс self.* (не смешивать с внешней телеметрией).
-  - Linux (AIG-502): real NUMA/temps from /sys.
-  - Windows (emulation): NUMA/temps = zeros (sysinfo for CPU/mem/disks).
-  - API: GET /api/v1/metrics/self.
-  - UI: SelfMetrics.svelte (Dashboard).
-  - **Сделано:** CPU avg 31.3%, Mem 76.6% (Windows), NUMA/temp = 0.
-
-- [ ] **P3.12** Терминология: Data Concentrator vs Ethernet hub vs Communicator vs Protocol Gateway.
-  - docs/glossary.md (создан).
-  - README.md, HARDWARE.md, docs/architecture.md (сноска "не Ethernet hub").
-
-- [x] **P3.13** Modbus TCP uplink (direct SCADA/HMI).
-  - protocols/hard/modbus_tcp.rs: Modbus TCP Server (slave) on port 502.
-  - Scenario: Modbus RTU -> Modbus TCP.
-
-## P4 - on demand (client request)
-
-- [ ] **P4.1** DNP3 (RS-485/Ethernet) -> OPC UA/MQTT.
-- [ ] **P4.2** IEC 60870-5-104 (substation remote control).
-- [ ] **P4.3** BACnet MSTP/IP -> Modbus TCP.
-- [ ] **P4.4** LoRa/wM-Bus/Sigfox -> MQTT.
-- [ ] **P4.5** G3-PLC/PRIME -> MQTT/IEC 60870.
-- [ ] **P4.6** M-Bus (gas/water meters).
-- [ ] **P4.7** Proprietary PLC (Siemens S7, Schneider, Mitsubishi, Omron) -> OPC UA/MQTT.
-- [ ] **P4.8** Kafka/AMQP (enterprise integration).
-- [ ] **P4.9** Modbus RTU -> OPC UA Server.
-- [ ] **P4.10** User scripts (Lua/Python) for custom preprocessing.
-
-- [ ] **P3.15** Edge computing (Fog node) documentation.
-  - docs/glossary.md: Cloud-Fog-Dew table.
-  - docs/architecture.md: "Edge computing: Fog node".
-  - README.md: "Edge computing (Fog node)".
-  - **Why:** concentrator is Fog node + Dew connectivity + Cloud uplink, not just converter.
-## P2.18b  spawn_restartable (Supervisor)   [x]
-- [x] фабрика + catch_unwind внутри spawn
-- [x] backoff 1s, диагностика в Bus
-- [x] тест restart_tests::spawn_restartable_restarts_after_panic
-
-## P2.20c  реальный heartbeat (alive-метрика)   [x]
-- [x] ProtocolAdapter::health_check(&Registry, timeout_ms)
-- [x] ProtocolAdapter::heartbeat_name() -> Option<&'static str>
-- [x] modbus   alive.PLATE-A (HARD)
-- [x] matter   alive.PLATE-B (SOFT)
-- [x] mqtt     alive.PLATE-C (LIFE)
-- [x] spawn_heartbeat читает health_check, а не "true по умолчанию"
-
-## P2.18c  restartable для доменов с уникальными ресурсами   [ ]
-- [ ] Внутренний reconnect-loop в mqtt/http (без пересоздания Receiver)
-- [ ] Проверить, что ни один домен не ломается при панике
-- [ ] Диагностика: счётчик паник на домен
-
-## P3.19  Triple redundancy: AIG-502 failover   [ ]
-- [ ] Modbus TCP slave на PLATE-C как fallback
-- [ ] Snapshot последней телеметрии (Redis  AIG-502 по запросу)
-
-## P3.20  CORE: Redis + Raw CBOR + TimescaleDB   [ ]
-- [ ] Redis hot-path (TTL 60s)         готово частично
-- [ ] Raw CBOR writer (10MB-сегменты)
-- [ ] TimescaleDB hypertable (1s/1m/1h)
-
-## Прочее   [ ]
-- [ ] docs/glossary.md  обновлять при новых терминах
-- [ ] CI: cargo check + cargo test на каждый PR
-
-> **Статус: R&D.** Контракты фиксируются раньше реализации. Эмуляторы  штатно.
-
-## P2.18c  агент сателлита + store & forward + PCIe P2P   [ ]
-- [ ] trait PeerLink (эмулятор: shared memory / Unix socket; реальное: PCIe P2P)
-- [ ] агент на сателлите: alive.<PLATE> раз в 1 с + автономная диагностика
-- [ ] локальный Raw на сателлите (CBOR, 10 МБ, 24 ч)  store & forward
-- [ ] досылка Raw в CORE по PCIe P2P при оживлении концентратора
-- [ ] тест: разрыв PCIe P2P -> alive стареет -> health_check = false -> Raw пишется локально -> P2P восстановлен -> Raw дослан
-- [ ] системотехнические требования к железу: root complex P2P, ACS, IOMMU, BIOS
-
-## P3.19  AIG-502 failover (эмулятор -> реальное железо)   [ ]
-- [ ] trait Aig502 + Aig502Emulator (сейчас)
-- [ ] contract-тесты: эмулятор и реальный AIG-502 (когда появится)
-- [ ] Modbus TCP slave на PLATE-A как fallback (внутри HARD-пути)
-- [ ] snapshot последней телеметрии (Redis -> AIG-502)
-- [ ] трёхуровневое питание AIG-502 (свой БП -> PCIe -> ИБП)
-
-## Статус сателлитов (R&D)
-- [x] PLATE-A (HARD): полевые протоколы (modbus) реальны; AIG-502  эмулятор (продакшен, железо не готово)
-- [ ] PLATE-B (SOFT): умный дом (Matter/Zigbee/Thread/BLE)  эмуляторы, в разработке
-- [ ] PLATE-C (LIFE): скоростные каналы (оптика, WiFi, DAS/JBOD, бэки, облака)  часть в разработке
