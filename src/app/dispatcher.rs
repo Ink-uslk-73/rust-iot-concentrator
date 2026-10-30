@@ -1,8 +1,8 @@
 //! src/app/dispatcher.rs - ModeState + Dispatcher.
 
-use frontier::core::bus::Bus;
-use frontier::core::dispatcher::{Dispatcher, DomainReceivers};
-use frontier::core::mode_switch::{Mode, ModeState};
+use crate::core::bus::Bus;
+use crate::core::dispatcher::{Dispatcher, DomainReceivers};
+use crate::core::mode_switch::{Mode, ModeState};
 
 pub struct DispatcherHandles {
     pub mode: ModeState,

@@ -3,10 +3,10 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use frontier::core::bus::{Bus, BusReceivers};
-use frontier::metrics::OverheadMetrics;
-use frontier::metrics::registry::Registry;
-use frontier::metrics::self_telemetry::SelfTelemetry;
+use crate::core::bus::{Bus, BusReceivers};
+use crate::metrics::OverheadMetrics;
+use crate::metrics::registry::Registry;
+use crate::metrics::self_telemetry::SelfTelemetry;
 
 pub struct BusHandles {
     pub bus: Bus,
