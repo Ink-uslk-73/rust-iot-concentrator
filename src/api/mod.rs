@@ -39,7 +39,15 @@ pub struct AppState {
 pub type SharedState = Arc<AppState>;
 
 pub fn router(state: SharedState) -> Router {
-    Router::new()
+    async fn health() -> axum::Json<serde_json::Value> {
+    axum::Json(serde_json::json!({
+        "status": "frontier: ok",
+        "version": env!("CARGO_PKG_VERSION"),
+        "name": "frontier",
+    }))
+}
+Router::new()
+        .route("/api/v1/health", axum::routing::get(health))
         .route("/api/v1/devices/:device_id/baseline",          get(baselines::get_latest))
         .route("/api/v1/devices/:device_id/baseline/summary",  get(baselines::get_summary))
         .route("/api/v1/devices/:device_id/baseline/diff",     get(baselines::get_diff))
