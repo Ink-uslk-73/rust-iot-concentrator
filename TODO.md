@@ -38,6 +38,10 @@
 - [ ] **P2.21** `src/config/` — `[api] addr` из TOML (fallback `--api-addr`)
 - [ ] **P2.22** `src/protocols/dlms.rs` — DLMS/COSEM adapter (HLS-ECDSA, Suite 1/2, X.509) — надстройка, фоном
 - [ ] **P2.23** `src/core/frontier.rs` — `FrontierState` (7 состояний), `Frontier`, `Scale`, `depth` (TBD, после docs)
+- [ ] **P2.24** `src/protocols/router_telemetry.rs` — SNMP v3 (poll + traps/informs) + NetFlow/IPFIX (collector) + Syslog, Router WI
+- [ ] **P2.25** `src/api/telemetry.rs` — SSE `/api/v1/telemetry/stream` (планшет, real-time, KeepAlive 15s)
+- [ ] **P2.26** `src/protocols/nb_iot.rs` — NB-IoT adapter (USB-свисток 4G/5G, SIM7080G/SIM8262E-M2), PLATE-B, РФ-диапазоны
+- [ ] **P2.27** `src/protocols/lte_m.rs` — LTE-M adapter (Cat-M1), PLATE-B (движущиеся устройства)
 
 ## P3 — низкий приоритет
 

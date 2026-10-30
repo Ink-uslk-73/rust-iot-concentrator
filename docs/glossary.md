@@ -132,6 +132,15 @@ TimescaleDB). Отказ любого слоя не роняет концент�
   отправляются при восстановлении (`StoreForward`, P2.18c-peer).
 - **Supervision tree (let-it-crash)** — дерево задач с автоперезапуском при панике
   (`Supervisor::spawn_restartable`, P2.18b), `PanicCounter` (P2.18c).
+- **NB-IoT** — 3GPP Rel-13, LPWAN: 180–200 кГц, PSM/eDRX (10+ лет), 164 дБ MCL, 250 кбит/с, 50 000 устройств/БС. Лицензированный спектр. PLATE-B. В РФ: B31/B20/B8/B3/B1/B7. См. `docs/system/plate-b-soft.md`.
+- **LTE-M** (Cat-M1) — 3GPP Rel-13: 1,4 МГц, ~1 Мбит/с, 50–100 мс, мобильность до 100 км/ч, VoLTE, ~156 дБ MCL. Для движущихся. См. `docs/system/plate-b-soft.md`.
+- **SNMP** — v1/v2c/v3, мониторинг устройств: system, interfaces, CPU/memory, LTE. Production — v3 (auth/priv). См. `docs/protocols/router-telemetry.md`.
+- **NetFlow/IPFIX** — потоковая телеметрия: 5-кортеж, bytes/packets, timestamps. Экспортёр → коллектор (frontier, UDP 2055).
+- **sFlow** — Sampled export: выборка заголовков + счётчики (UDP 6343).
+- **gNMI** — gRPC streaming, YANG-модели, до sub-second (TCP 57400, TLS).
+- **Syslog** — текстовые события (up/down, auth, config), UDP 514.
+- **CoAP** — UDP, малый оверхед, для ограниченных устройств.
+
 ## Термины проекта
 
 - **PLATE-A (Hard)** — Moxa **AIG-502**: Intel i7, Modbus RTU/ASCII/TCP,
