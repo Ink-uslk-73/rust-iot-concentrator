@@ -82,6 +82,10 @@
 - **P2.18c-peer** `src/transport/peer_link.rs` — `LocalP2p::Linux` real (сейчас заглушка)
 - **P2.18c-peer** `src/storage/store_forward.rs` — миграция на `RawStore`
 - **P2.19** `src/main.rs` — разбиение на `src/app/` (config, bus, dispatcher, domains, satellite, storage, api) — **завтра, вариант B**
+- **ADR-0005** `docs/decisions/ADR-0005-satellite-driver-matrix.md` — таблица драйверов/СУБД/протоколов PLATE-A/B/C
+- **ADR-0007** `docs/decisions/ADR-0007-dlms-cosem-adapter.md` — создан (DLMS adapter)
+- **ADR-0008** `docs/decisions/ADR-0008-frontier-term.md` — создан (Фронтир, 7 состояний)
+- **ADR-0009** `docs/decisions/ADR-0009-project-name-frontier.md` — создать (имя проекта `Frontier`, bin, UI, API)
 - **P3.19** `src/gateway/` — AIG-502 failover (Modbus TCP slave на PLATE-C + snapshot из Redis)
 - **P3.20** `src/storage/raw.rs` — Raw CBOR (10 МБ/24 ч) + TimescaleDB hypertable (1s/1m/1h)
 - **PLATE-B (Soft)** — спецификация не готова
