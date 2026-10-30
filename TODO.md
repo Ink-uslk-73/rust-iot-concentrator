@@ -57,6 +57,7 @@
 - [ ] **P3.21** `emulation/cooja/` — Cooja (Contiki-NG): WSN-эмуляция (Thread/Zigbee, 6LoWPAN, RPL, 6TiSCH), headless CI
 - [ ] **P3.23** `config/satellite/<id>.toml` — конфиги для PLATE-A/B/C (драйверы, СУБД, протоколы), ADR-0005
 - [ ] **P3.24** `docs/system/domain-priority.md` — HARD/SOFT/LIFE (10/100/1000 мс), изоляция, backlog, FrontierState
+- [ ] **P3.25** `src/vm/` — CPU pinning (taskset/cgroup/affinity), NUMA 0-7/72-95/8-31 — TBD
 
 ## P4 — on demand (client request)
 
