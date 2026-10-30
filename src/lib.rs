@@ -16,3 +16,4 @@ pub mod vm;
 pub mod config;
 pub mod supervisor;
 pub mod satellite;
+pub mod app;
