@@ -1,5 +1,8 @@
 # Охлаждение
 
+**Статус:** accepted
+**Связанные:** [ADR-0001](../decisions/ADR-0001-carrier-board-for-atx.md), [ADR-0002](../decisions/ADR-0002-asus-as-reference-module.md)
+
 ## Ограничение ASUS (manual)
 
   **Ambient temperature: 10–35 °C** (manual, стр. 106–107).

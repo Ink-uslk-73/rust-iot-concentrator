@@ -1,5 +1,8 @@
 # Программные роутер и шлюз по доменам
 
+**Статус:** accepted
+**Связанные:** [ADR-0004](../decisions/ADR-0004-router-gateway-domains.md)
+
 Домены сателлита PLATE-A/B/C. P2P не используется (P2P у концентратора).
 
 ## PLATE-A (Hard) = Moxa AIG-502

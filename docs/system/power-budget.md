@@ -1,5 +1,8 @@
 # Бюджет внешнего БП 1200 Вт
 
+**Статус:** accepted
+**Связанные:** [ADR-0001](../decisions/ADR-0001-carrier-board-for-atx.md), [ADR-0002](../decisions/ADR-0002-asus-as-reference-module.md)
+
 Внешний БП: **1200 Вт**. Питает несущую, на которой стоит ATX-модуль
 (ASUS ProArt X870E-Creator). SATA-рельса **не используется**.
 

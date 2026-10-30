@@ -1,5 +1,8 @@
 # PCIe топология
 
+**Статус:** accepted
+**Связанные:** [ADR-0001](../decisions/ADR-0001-carrier-board-for-atx.md), [ADR-0014](../decisions/ADR-0014-pcie-ntb-backplane.md)
+
 **P2P / ACS / xGMI не входят** — это системотехника концентратора (см. `958ea03`),
 не сателлита. SATA **исключён**. Только M.2 NVMe и слоты PCIe.
 

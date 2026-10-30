@@ -1,5 +1,8 @@
 # Системотехника сателлита PLATE-3
 
+**Статус:** accepted
+**Связанные:** [ADR-0004](../decisions/ADR-0004-router-gateway-domains.md), [ADR-0006](../decisions/ADR-0006-satellite-sovereignty.md)
+
 Сателлит построен на **несущей плате (carrier board)**, на которую устанавливается
 стандартная **ATX-совместимая материнская плата** через стойки. Вокруг неё размещается
 вся периферия: разъёмы внешнего БП 1200 Вт, DC-DC, FPGA SmartNIC, watchdog CH32V003, RTC DS3231SN.

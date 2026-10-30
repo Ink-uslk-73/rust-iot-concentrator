@@ -1,5 +1,8 @@
 # BOM (без SATA)
 
+**Статус:** accepted
+**Связанные:** [ADR-0001](../decisions/ADR-0001-carrier-board-for-atx.md), [ADR-0002](../decisions/ADR-0002-asus-as-reference-module.md)
+
 ## Основа
 
 | Компонент | Кол-во | Примечание |

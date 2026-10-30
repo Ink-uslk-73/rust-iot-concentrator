@@ -1,5 +1,8 @@
 # Session notes
 
+**Статус:** draft
+**Связанные:** [ADR-0008](../decisions/ADR-0008-frontier-term.md)
+
 ## 2026-10-29
 
 ### Сделано

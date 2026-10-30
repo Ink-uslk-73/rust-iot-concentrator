@@ -1,4 +1,7 @@
-﻿# Architecture - Telecom Concentrator v4.0
+# Architecture - Telecom Concentrator v4.0
+
+**Статус:** draft
+**Связанные:** [ADR-0008](../decisions/ADR-0008-frontier-term.md), [ADR-0015](../decisions/ADR-0015-combination-innovation.md)
 
 ## Layers
 

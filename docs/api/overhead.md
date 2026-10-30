@@ -1,5 +1,8 @@
 # Overhead metrics
 
+**Статус:** accepted
+**Связанные:** [ADR-0011](../decisions/ADR-0011-tablet-first-telemetry.md)
+
 `GET /api/v1/metrics/overhead`
 
 ## Thresholds

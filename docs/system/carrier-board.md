@@ -1,5 +1,8 @@
 # Несущая плата (carrier board)
 
+**Статус:** accepted
+**Связанные:** [ADR-0001](../decisions/ADR-0001-carrier-board-for-atx.md), [ADR-0002](../decisions/ADR-0002-asus-as-reference-module.md)
+
 Несущая — собственная PCB, на которую через стойки устанавливается ATX-совместимая
 материнская плата (**референсный модуль**: ASUS ProArt X870E-Creator WiFi,
 30.5 × 24.4 см). Вокруг неё на несущей размещается периферия. P2P/ACS и SATA

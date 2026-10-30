@@ -1,5 +1,8 @@
 # Глоссарий
 
+**Статус:** accepted
+**Связанные:** [ADR-0008](../decisions/ADR-0008-frontier-term.md), [ADR-0015](../decisions/ADR-0015-combination-innovation.md)
+
 **Satellite (сателлит)**  одна из трёх плат (A/B/C), независимый
 процесс-адаптер. Пишет ``alive.<PLATE>`` в Registry, чтобы heartbeat
 мог подтвердить её живость.

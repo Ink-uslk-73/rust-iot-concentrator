@@ -1,4 +1,7 @@
-﻿# API - baseline and events
+# API - baseline and events
+
+**Статус:** accepted
+**Связанные:** [ADR-0011](../decisions/ADR-0011-tablet-first-telemetry.md), [ADR-0010](../decisions/ADR-0010-router-telemetry.md)
 
 REST + SSE for tablet (UI) and SOC (SIEM).
 
