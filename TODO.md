@@ -33,7 +33,7 @@
 - [x] **P2.18b** `src/supervisor.rs` — `spawn_restartable` (фабрика + catch_unwind + backoff + Bus diag)
 - [x] **P2.18c** `src/transport/reconnect.rs` — `ReconnectSchedule` (equal jitter); `src/supervisor.rs` — `PanicCounter` + Bus diag `n=`
 - [ ] **P2.18c-peer** `src/transport/peer_link.rs` — real `LocalP2p::Linux` (сейчас заглушка); `src/storage/store_forward.rs` — миграция на `RawStore`
-- [x] **P2.19** `src/main.rs` — Dispatcher, cache_tasks, HotCache, RawStore, pg, SatelliteWatchdog, домены, VmSemaphore, run_domain_with_sem, api::router (восстановлен)
+- [x] **P2.19** `src/app/` (8 файлов: config, bus, dispatcher, domains, satellite, storage, api, mod) — main.rs split (270 байт, только `fn main()`)
 - [x] **P2.20c** `src/satellite/heartbeat.rs` — реальный heartbeat `alive.<PLATE>` (health_check + spawn_heartbeat)
 - [ ] **P2.21** `src/config/` — `[api] addr` из TOML (fallback `--api-addr`)
 - [ ] **P2.22** `src/protocols/dlms.rs` — DLMS/COSEM adapter (HLS-ECDSA, Suite 1/2, X.509) — надстройка, фоном
@@ -55,6 +55,8 @@
 - [ ] **P3.19** `src/gateway/` — AIG-502 failover: Modbus TCP slave на PLATE-C + snapshot из Redis
 - [ ] **P3.20** `src/storage/raw.rs` — Raw CBOR (10 МБ/24 ч) + TimescaleDB hypertable (1s/1m/1h)
 - [ ] **P3.21** `emulation/cooja/` — Cooja (Contiki-NG): WSN-эмуляция (Thread/Zigbee, 6LoWPAN, RPL, 6TiSCH), headless CI
+- [ ] **P3.23** `config/satellite/<id>.toml` — конфиги для PLATE-A/B/C (драйверы, СУБД, протоколы), ADR-0005
+- [ ] **P3.24** `docs/system/domain-priority.md` — HARD/SOFT/LIFE (10/100/1000 мс), изоляция, backlog, FrontierState
 
 ## P4 — on demand (client request)
 
@@ -88,7 +90,6 @@
 - **P1.6** `src/transport/shmem.rs` — SPSC ring (Linux only)
 - **P2.18c-peer** `src/transport/peer_link.rs` — `LocalP2p::Linux` real (сейчас заглушка)
 - **P2.18c-peer** `src/storage/store_forward.rs` — миграция на `RawStore`
-- **P2.19** `src/main.rs` — разбиение на `src/app/` (config, bus, dispatcher, domains, satellite, storage, api) — **завтра, вариант B**
 - **ADR-0005** `docs/decisions/ADR-0005-satellite-driver-matrix.md` — таблица драйверов/СУБД/протоколов PLATE-A/B/C
 - **ADR-0007** `docs/decisions/ADR-0007-dlms-cosem-adapter.md` — создан (DLMS adapter)
 - **ADR-0008** `docs/decisions/ADR-0008-frontier-term.md` — создан (Фронтир, 7 состояний)
