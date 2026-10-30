@@ -50,7 +50,7 @@ pub async fn init(
 pub fn spawn_tasks(
     cache: Option<Arc<HotCache>>,
     raw: Arc<RawStore>,
-    pool: Option<crate::storage::pg::Pool>,
+    pool: Option<crate::storage::pg::PgPool>,
     bus: Bus,
     cfg: Arc<RwLock<ConcentratorConfig>>,
 ) {

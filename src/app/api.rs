@@ -18,7 +18,7 @@ use crate::storage::pg;
 
 #[allow(clippy::too_many_arguments)]
 pub fn build_state(
-    pool: Option<pg::Pool>,
+    pool: Option<pg::PgPool>,
     metrics: Arc<OverheadMetrics>,
     registry: Arc<Registry>,
     cache: Option<Arc<HotCache>>,

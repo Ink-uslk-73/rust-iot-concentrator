@@ -26,7 +26,7 @@ pub async fn run(cli: Cli) -> anyhow::Result<()> {
             domains::spawn_domains(&mut dom_h.supervisor, bus_h.bus.clone(), disp_h.domain_receivers,
                 dom_h.hard_sem, dom_h.soft_sem, dom_h.life_sem);
             let _sat_h = satellite::init(bus_h.bus.clone());
-            let cfg = Arc::new(RwLock::new(crate::config::ConcentratorConfig::load(&cli.config)?));
+            let cfg = Arc::new(RwLock::new(crate::config::ConcentratorConfig::load(&cli.config).map_err(|e| anyhow::anyhow!("config: {}", e))?));
             let st_h = storage::init(&cli.database_url, cfg.clone()).await;
             storage::spawn_tasks(st_h.cache.clone(), st_h.raw.clone(), None, bus_h.bus.clone(), cfg.clone());
             let state = api::build_state(None, bus_h.metrics.clone(), bus_h.registry.clone(),
