@@ -3,7 +3,7 @@
 
   const COMMANDS = ["help", "status", "about", "clear", "modes", "api"];
   let lines: string[] = [
-    "Concentrator Terminal (local mode)",
+    "Frontier Terminal (local mode)",
     "WSS backend not yet implemented. Type help for local commands.",
     ""
   ];

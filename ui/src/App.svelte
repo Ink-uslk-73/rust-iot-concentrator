@@ -21,7 +21,7 @@
 
 <div class="layout">
   <aside class="sidebar">
-    <h1>Concentrator</h1>
+    <h1>Frontier</h1>
     <nav>
       <button class:active={page === "dashboard"} on:click={() => (page = "dashboard")}>Dashboard</button>
       <button class:active={page === "telemetry"} on:click={() => (page = "telemetry")}>Telemetry</button>
