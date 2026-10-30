@@ -47,4 +47,3 @@ Router WI — **реальный** источник телеметрии (не �
 - [telemetry.md](../api/telemetry.md) — контракт для планшета;
 - [glossary.md](../glossary.md) — термины;
 - [TODO.md](../../TODO.md) — P2.24 (Router WI).
-
