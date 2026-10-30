@@ -50,6 +50,7 @@
 - [ ] **P3.18** `ui/` — Tooltip (Pointer Events + Floating UI) + light HelpModal (DONE частично)
 - [ ] **P3.19** `src/gateway/` — AIG-502 failover: Modbus TCP slave на PLATE-C + snapshot из Redis
 - [ ] **P3.20** `src/storage/raw.rs` — Raw CBOR (10 МБ/24 ч) + TimescaleDB hypertable (1s/1m/1h)
+- [ ] **P3.21** `emulation/cooja/` — Cooja (Contiki-NG): WSN-эмуляция (Thread/Zigbee, 6LoWPAN, RPL, 6TiSCH), headless CI
 
 ## P4 — on demand (client request)
 
