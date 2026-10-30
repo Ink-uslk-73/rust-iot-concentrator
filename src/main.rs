@@ -34,7 +34,7 @@ struct Cli {
     config: String,
     #[arg(long, default_value = "postgres://concentrator@localhost:5432/concentrator")]
     database_url: String,
-    #[arg(long, default_value = "0.0.0.0:8443")]
+    #[arg(long, default_value = "127.0.0.1:1967")]
     api_addr: String,
     #[command(subcommand)]
     command: Cmd,
