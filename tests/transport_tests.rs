@@ -1,7 +1,7 @@
 //! Transport tests (nop, shmem/vsock on Linux only).
 
-use rust_iot_concentrator::transport::nop::NopTransport;
-use rust_iot_concentrator::transport::{Transport, TransportMessage};
+use frontier::transport::nop::NopTransport;
+use frontier::transport::{Transport, TransportMessage};
 
 #[test]
 fn nop_send_recv() {

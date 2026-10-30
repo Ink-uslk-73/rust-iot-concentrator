@@ -5,27 +5,27 @@ use std::time::Duration;
 use clap::{Parser, Subcommand};
 use tracing::{info, warn};
 
-use rust_iot_concentrator::api::{router, AppState};
-use rust_iot_concentrator::cache_tasks::spawn_cache_tasks;
-use rust_iot_concentrator::config::ConcentratorConfig;
-use rust_iot_concentrator::core::bus::{Bus, BusMessage, BusPayload};
-use rust_iot_concentrator::core::dispatcher::Dispatcher;
-use rust_iot_concentrator::core::mode_switch::{Mode, ModeState, Priority};
-use rust_iot_concentrator::gateway::GatewayConfig;
-use rust_iot_concentrator::metrics::OverheadMetrics;
-use rust_iot_concentrator::protocols;
-use rust_iot_concentrator::satellite::heartbeat::spawn_heartbeat;
-use rust_iot_concentrator::satellite::watchdog::SatelliteWatchdog;
-use rust_iot_concentrator::satellite::SatelliteRegistry;
-use rust_iot_concentrator::storage::cache::HotCache;
-use rust_iot_concentrator::storage::pg;
-use rust_iot_concentrator::storage::raw::RawStore;
-use rust_iot_concentrator::supervisor::Supervisor;
-use rust_iot_concentrator::vm::hard::HardDomain;
-use rust_iot_concentrator::vm::life::LifeDomain;
-use rust_iot_concentrator::vm::run_domain_with_sem;
-use rust_iot_concentrator::vm::soft::SoftDomain;
-use rust_iot_concentrator::vm::state::VmSemaphore;
+use frontier::api::{router, AppState};
+use frontier::cache_tasks::spawn_cache_tasks;
+use frontier::config::ConcentratorConfig;
+use frontier::core::bus::{Bus, BusMessage, BusPayload};
+use frontier::core::dispatcher::Dispatcher;
+use frontier::core::mode_switch::{Mode, ModeState, Priority};
+use frontier::gateway::GatewayConfig;
+use frontier::metrics::OverheadMetrics;
+use frontier::protocols;
+use frontier::satellite::heartbeat::spawn_heartbeat;
+use frontier::satellite::watchdog::SatelliteWatchdog;
+use frontier::satellite::SatelliteRegistry;
+use frontier::storage::cache::HotCache;
+use frontier::storage::pg;
+use frontier::storage::raw::RawStore;
+use frontier::supervisor::Supervisor;
+use frontier::vm::hard::HardDomain;
+use frontier::vm::life::LifeDomain;
+use frontier::vm::run_domain_with_sem;
+use frontier::vm::soft::SoftDomain;
+use frontier::vm::state::VmSemaphore;
 
 #[derive(Parser)]
 #[command(name = "rust-iot-concentrator", version, about = "Telecom concentrator v4.0")]
@@ -73,8 +73,8 @@ async fn run(cli: Cli) -> anyhow::Result<()> {
 
     // 2. Bus + metrics + registry + self-telemetry
     let metrics = Arc::new(OverheadMetrics::new());
-    let registry = Arc::new(rust_iot_concentrator::metrics::registry::Registry::new());
-    let mut self_tel = rust_iot_concentrator::metrics::self_telemetry::SelfTelemetry::new();
+    let registry = Arc::new(frontier::metrics::registry::Registry::new());
+    let mut self_tel = frontier::metrics::self_telemetry::SelfTelemetry::new();
     let registry_bg = registry.clone();
     tokio::spawn(async move {
         let mut tick = tokio::time::interval(Duration::from_secs(2));

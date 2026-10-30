@@ -1,6 +1,6 @@
 //! Overhead integration tests (baseline vs through hub).
 
-use rust_iot_concentrator::metrics::OverheadMetrics;
+use frontier::metrics::OverheadMetrics;
 use std::sync::Arc;
 use std::time::Instant;
 

@@ -1136,6 +1136,56 @@ dependencies = [
 ]
 
 [[package]]
+name = "frontier"
+version = "4.0.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "axum",
+ "axum-server",
+ "aya",
+ "chrono",
+ "ciborium",
+ "clap",
+ "crossbeam",
+ "futures",
+ "futures-util",
+ "hex",
+ "libc",
+ "mime_guess",
+ "parking_lot",
+ "portable-pty",
+ "redis",
+ "reqwest",
+ "russh",
+ "rust-embed",
+ "rustls",
+ "rustls-pemfile",
+ "serde",
+ "serde_json",
+ "serial_test",
+ "sha2 0.10.9",
+ "sqlx",
+ "sysinfo",
+ "tempfile",
+ "thiserror 1.0.69",
+ "tokio",
+ "tokio-modbus",
+ "tokio-rustls",
+ "tokio-serial",
+ "tokio-stream",
+ "tokio-test",
+ "tokio-util",
+ "toml",
+ "tower",
+ "tower-http",
+ "tracing",
+ "tracing-appender",
+ "tracing-subscriber",
+ "uuid",
+]
+
+[[package]]
 name = "fs-err"
 version = "3.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2837,56 +2887,6 @@ checksum = "0d84e8ba78bd384263e5922f084cbe1b081c3b7e69add59c8fb097b879ba968a"
 dependencies = [
  "sha2 0.11.1",
  "walkdir",
-]
-
-[[package]]
-name = "rust-iot-concentrator"
-version = "4.0.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "axum",
- "axum-server",
- "aya",
- "chrono",
- "ciborium",
- "clap",
- "crossbeam",
- "futures",
- "futures-util",
- "hex",
- "libc",
- "mime_guess",
- "parking_lot",
- "portable-pty",
- "redis",
- "reqwest",
- "russh",
- "rust-embed",
- "rustls",
- "rustls-pemfile",
- "serde",
- "serde_json",
- "serial_test",
- "sha2 0.10.9",
- "sqlx",
- "sysinfo",
- "tempfile",
- "thiserror 1.0.69",
- "tokio",
- "tokio-modbus",
- "tokio-rustls",
- "tokio-serial",
- "tokio-stream",
- "tokio-test",
- "tokio-util",
- "toml",
- "tower",
- "tower-http",
- "tracing",
- "tracing-appender",
- "tracing-subscriber",
- "uuid",
 ]
 
 [[package]]

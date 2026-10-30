@@ -1,8 +1,8 @@
-﻿//! Storage tests: fallback (no DB) + versioning.
+//! Storage tests: fallback (no DB) + versioning.
 
 use chrono::Utc;
-use rust_iot_concentrator::storage::baselines::{self, Baseline};
-use rust_iot_concentrator::storage::events::{self, Event, EventFilter};
+use frontier::storage::baselines::{self, Baseline};
+use frontier::storage::events::{self, Event, EventFilter};
 
 #[tokio::test]
 async fn baseline_save_latest_history_no_db() {

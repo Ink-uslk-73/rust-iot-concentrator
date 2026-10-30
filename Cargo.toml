@@ -1,5 +1,5 @@
 [package]
-name = "rust-iot-concentrator"
+name = "frontier"
 version = "4.0.0"
 edition = "2021"
 rust-version = "1.75"
@@ -65,3 +65,6 @@ strip = false
 panic = "unwind"
 debug = true
 
+[[bin]]
+name = "frontier"
+path = "src/main.rs"
