@@ -93,6 +93,7 @@ TimescaleDB). Отказ любого слоя не роняет концент�
 - **Fog vs Edge** — edge — на устройстве; fog — **отдельный промежуточный слой**,
   агрегирует данные от многих edge. В проекте: AIG-502 (fog) vs 31 сенсор (edge).
 - **Иерархия вычислений** — Cloud (облако) → Fog (туман) → Edge (край) → Dew (роса).
+- **FrontierState** — 7 состояний Фронтира (`Wild` → `Enriched` → `Aggregated` → `Structured` → `Clustered` → `Patterned` → `Explored`), `src/core/frontier.rs`. См. `ADR-0008`.
   В проекте: митрополия (Cloud) → сателлиты PLATE-A/B/C (Fog) → сенсоры (Edge) →
   автономная работа сателлита без митрополии (Dew).
 - **Митрополия** — концентратор (2P AMD EPYC, xGMI, NUMA): данные, Bus, Supervisor.
@@ -100,6 +101,9 @@ TimescaleDB). Отказ любого слоя не роняет концент�
 - **Протекторат** — сателлит PLATE-A/B/C: почти автономный, свои драйверы,
   СУБД, протоколы. См. `ADR-0006`.
 - **Сеньор** — концентратор, повелевает сателлитами через Bus
+- **HARD** (10 мс) — критический уровень: Modbus RTU, тайминги, радиоканал. Missed tick: Delay/Skip. NUMA: node 0, cores 0-7. См. `docs/system/domain-priority.md`.
+- **SOFT** (100 мс) — маршрутизация, состояния, метрики. Missed tick: Skip. NUMA: node 1, cores 72-95.
+- **LIFE** (1000 мс) — логирование, heartbeat, статистика, кокпит. Missed tick: Burst. NUMA: node 0, cores 8-31.
   (`Command`, `ModeChange`, `Shutdown`). См. `ADR-0006`.
 - **AMI (Advanced Metering Infrastructure)** — инфраструктура умного учёта: счётчики + NAN + DCU + WAN + HES/MDMS. См. `docs/protocols/dcu.md`.
 - **NAN (Neighborhood Area Network)** — локальная сеть DCU ↔ счётчики: PLC (G3-PLC, PRIME, IEEE 1901.2), RF mesh, LoRaWAN, RS-485, Wireless M-Bus.
