@@ -47,7 +47,7 @@ pub async fn run(cli: Cli) -> anyhow::Result<()> {
             );
 
             {
-                let mut dispatcher = disp_h.dispatcher;
+                let dispatcher = disp_h.dispatcher;
                 let (signals_rx, telemetry_rx, status_rx, diag_rx) = bus_h.bus_rx.split();
                 dom_h.supervisor.spawn(async move {
                     if let Err(e) = dispatcher.run(telemetry_rx, signals_rx, status_rx, diag_rx).await {

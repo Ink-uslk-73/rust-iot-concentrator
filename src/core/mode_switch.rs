@@ -125,10 +125,11 @@ impl Mode {
             3 => Mode::HardSoft,
             4 => Mode::HardLife,
             5 => Mode::SoftLife,
+            6 => Mode::All,
             _ => {
-            tracing::error!("mode_switch: corrupt u8 = {}, fallback to HardOnly", v);
-            Mode::HardOnly
-        }
+                tracing::error!("mode_switch: corrupt u8 = {}, fallback to HardOnly", v);
+                Mode::HardOnly
+            }
         }
     }
 }
@@ -174,7 +175,7 @@ impl ModeState {
         let next = cur.degrade();
         if next != cur {
             self.prev.store(cur.to_u8(), Ordering::Release);
-            self.inner.store(next.to_u8(), Ordering::AcqRel);
+            self.inner.store(next.to_u8(), Ordering::Release);
         }
         next
     }
@@ -184,7 +185,7 @@ impl ModeState {
         let prev = Mode::from_u8(self.prev.load(Ordering::Acquire));
         let cur = self.get();
         if prev != cur && prev.enabled_count() > cur.enabled_count() {
-            self.inner.store(prev.to_u8(), Ordering::AcqRel);
+            self.inner.store(prev.to_u8(), Ordering::Release);
         }
         self.get()
     }
