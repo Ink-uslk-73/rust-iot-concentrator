@@ -22,7 +22,7 @@ pub async fn init(
     database_url: &str,
     cfg: Arc<RwLock<ConcentratorConfig>>,
 ) -> StorageHandles {
-    let pool = match pg::connect(database_url).await {
+    let _pool = match pg::connect(database_url).await {
         Ok(p) => { tracing::info!("postgresql connected"); Some(p) }
         Err(e) => { warn!(error = %e, "postgresql unavailable; file-fallback mode"); None }
     };

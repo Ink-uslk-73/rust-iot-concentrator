@@ -21,7 +21,7 @@ pub async fn run(cli: Cli) -> anyhow::Result<()> {
         Cmd::Run => {
             info!("run mode - step 4/5: storage + api");
             let bus_h = bus::init();
-            let mut disp_h = dispatcher::init(bus_h.bus.clone());
+            let disp_h = dispatcher::init(bus_h.bus.clone());
             let mut dom_h = domains::init(bus_h.bus.clone());
             domains::spawn_domains(&mut dom_h.supervisor, bus_h.bus.clone(), disp_h.domain_receivers,
                 dom_h.hard_sem, dom_h.soft_sem, dom_h.life_sem);
