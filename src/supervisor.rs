@@ -159,9 +159,16 @@ impl Supervisor {
                 let result = std::panic::AssertUnwindSafe(fut).catch_unwind().await;
                 match result {
                     Ok(()) => break,
-                    Err(_) => {
+                    Err(payload) => {
+                        let msg = if let Some(s) = payload.downcast_ref::<&str>() {
+                            s.to_string()
+                        } else if let Some(s) = payload.downcast_ref::<String>() {
+                            s.clone()
+                        } else {
+                            "unknown panic".into()
+                        };
                         let n = counter.inc();
-                        warn!(task = name, panics = n, "supervisor: task panicked, restart");
+                        warn!(task = name, panics = n, panic_msg = %msg, "supervisor: task panicked, restart");
                         if let Some(bus) = &bus {
                             let _ = bus.diagnostics.try_send(BusMessage::new(
                                 "supervisor",

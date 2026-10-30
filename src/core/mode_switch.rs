@@ -1,4 +1,4 @@
-﻿//! src/core/mode_switch.rs - Mode switch (7 variants).
+//! src/core/mode_switch.rs - Mode switch (7 variants).
 //!
 //! Atomic storage via AtomicU8. Thread-safe.
 //! Degradation: LIFE -> SOFT. HARD never degrades.
@@ -125,7 +125,10 @@ impl Mode {
             3 => Mode::HardSoft,
             4 => Mode::HardLife,
             5 => Mode::SoftLife,
-            _ => Mode::All,
+            _ => {
+            tracing::error!("mode_switch: corrupt u8 = {}, fallback to HardOnly", v);
+            Mode::HardOnly
+        }
         }
     }
 }
@@ -133,15 +136,16 @@ impl Mode {
 #[derive(Clone)]
 pub struct ModeState {
     inner: Arc<AtomicU8>,
+    prev: Arc<AtomicU8>,
 }
 
 impl ModeState {
     pub fn new() -> Self {
-        Self { inner: Arc::new(AtomicU8::new(Mode::All.to_u8())) }
+        Self { inner: Arc::new(AtomicU8::new(Mode::All.to_u8())), prev: Arc::new(AtomicU8::new(Mode::All.to_u8())) }
     }
 
     pub fn with_mode(mode: Mode) -> Self {
-        Self { inner: Arc::new(AtomicU8::new(mode.to_u8())) }
+        Self { inner: Arc::new(AtomicU8::new(mode.to_u8())), prev: Arc::new(AtomicU8::new(mode.to_u8())) }
     }
 
     pub fn get(&self) -> Mode {
@@ -162,6 +166,27 @@ impl ModeState {
             )
             .map(Mode::from_u8)
             .map_err(Mode::from_u8)
+    }
+
+    /// Degrade: сохранить текущий mode в prev, установить следующий.
+    pub fn degrade(&self) -> Mode {
+        let cur = self.get();
+        let next = cur.degrade();
+        if next != cur {
+            self.prev.store(cur.to_u8(), Ordering::Release);
+            self.inner.store(next.to_u8(), Ordering::AcqRel);
+        }
+        next
+    }
+
+    /// Restore: вернуть prev mode (если он ещё актуален).
+    pub fn restore(&self) -> Mode {
+        let prev = Mode::from_u8(self.prev.load(Ordering::Acquire));
+        let cur = self.get();
+        if prev != cur && prev.enabled_count() > cur.enabled_count() {
+            self.inner.store(prev.to_u8(), Ordering::AcqRel);
+        }
+        self.get()
     }
 }
 
