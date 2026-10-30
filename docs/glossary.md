@@ -98,6 +98,21 @@ TimescaleDB). Отказ любого слоя не роняет концент�
   СУБД, протоколы. См. `ADR-0006`.
 - **Сеньор** — концентратор, повелевает сателлитами через Bus
   (`Command`, `ModeChange`, `Shutdown`). См. `ADR-0006`.
+- **AMI (Advanced Metering Infrastructure)** — инфраструктура умного учёта: счётчики + NAN + DCU + WAN + HES/MDMS. См. `docs/protocols/dcu.md`.
+- **NAN (Neighborhood Area Network)** — локальная сеть DCU ↔ счётчики: PLC (G3-PLC, PRIME, IEEE 1901.2), RF mesh, LoRaWAN, RS-485, Wireless M-Bus.
+- **WAN (Wide Area Network)** — uplink DCU ↔ HES: 4G LTE, GPRS/3G, Ethernet, fiber.
+- **HES/MDMS** — Head-End System / Meter Data Management System: центральные серверы коммунального предприятия.
+
+## Протоколы
+
+- **DLMS/COSEM** (IEC 62056-5-3/6-1/6-2) — основной протокол AMI; поверх HDLC (RS-485, RF), TCP/IP (WAN), PLC. См. `docs/protocols/dlms-cosem.md`.
+- **HLS** (High Level Security) — механизмы 2–7 (GMAC, SHA-256, ECDSA); HLS-ECDSA (7) — наш выбор. См. `ADR-0007`.
+- **Security Suite** — 0 (AES-GCM-128), 1 (P-256 + SHA-256), 2 (P-384 + SHA-384); наш выбор — 1/2.
+- **IEC 60870-5-104** — телеметрия/управление в энергосистемах (P4.2).
+- **IEC 61850** — DCU в вторичных подстанциях (Smart Grid).
+- **Wireless M-Bus** (EN 13757-4) — Sub-1 GHz, счётчики (P4.6).
+- **G3-PLC / PRIME / IEEE 1901.2** — PLC, NAN (P4.5).
+
 ## Концепции
 
 - **Валюта (данные)** — обмен между сателлитами и митрополией — только данными.
@@ -127,3 +142,6 @@ TimescaleDB). Отказ любого слоя не роняет концент�
 - **PLATE-C (Life)** — несущая + ATX (ASUS ProArt X870E-Creator) + FPGA SmartNIC
   (50 Вт), RTC DS3231SN, watchdog CH32V003, power mux (резерв-1/2).
   Роль: **МИД** — экспорт/импорт, СУБД, связь с облаками, шлюз.
+- **DCU (Data Concentrator Unit)** — ядро AMI/Smart Grid: агрегирует данные со счётчиков, NAN → WAN, предобработка, шифрование. См. `docs/protocols/dcu.md`.
+- **IoT-концентратор** — шире DCU: edge gateway (фронтир), агрегация, конвертация протоколов, безопасность. См. `docs/protocols/dcu.md`.
+- **Frontier** — имя проекта и главной программы (`Cargo.toml` `name = "frontier"`, `bin` `frontier`, UI-заголовок). Термин — см. `ADR-0008` (7 состояний, «улитка Улама»). См. `ADR-0009` (TBD).
