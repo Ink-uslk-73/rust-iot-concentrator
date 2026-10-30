@@ -1,7 +1,7 @@
-﻿//! src/storage/pg.rs - PostgreSQL pool + health + migrations.
+//! src/storage/pg.rs - PostgreSQL pool + health + migrations.
 
 use sqlx::postgres::PgPoolOptions;
-use sqlx::PgPool;
+pub use sqlx::PgPool;
 use std::time::Duration;
 
 pub async fn connect(database_url: &str) -> Result<PgPool, sqlx::Error> {
