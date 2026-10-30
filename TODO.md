@@ -36,6 +36,8 @@
 - [x] **P2.19** `src/main.rs` — Dispatcher, cache_tasks, HotCache, RawStore, pg, SatelliteWatchdog, домены, VmSemaphore, run_domain_with_sem, api::router (восстановлен)
 - [x] **P2.20c** `src/satellite/heartbeat.rs` — реальный heartbeat `alive.<PLATE>` (health_check + spawn_heartbeat)
 - [ ] **P2.21** `src/config/` — `[api] addr` из TOML (fallback `--api-addr`)
+- [ ] **P2.22** `src/protocols/dlms.rs` — DLMS/COSEM adapter (HLS-ECDSA, Suite 1/2, X.509) — надстройка, фоном
+- [ ] **P2.23** `src/core/frontier.rs` — `FrontierState` (7 состояний), `Frontier`, `Scale`, `depth` (TBD, после docs)
 
 ## P3 — низкий приоритет
 
