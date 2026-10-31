@@ -1,45 +1,39 @@
-# Системотехника сателлита PLATE-3
+# Системотехника (docs/system)
 
 **Статус:** accepted
-**Связанные:** [ADR-0004](../decisions/ADR-0004-router-gateway-domains.md), [ADR-0006](../decisions/ADR-0006-satellite-sovereignty.md)
+**Связанные:** [ADR-0006](../decisions/ADR-0006-satellite-sovereignty.md), [ADR-0018](../decisions/ADR-0018-wrx90e-platform.md).
 
-Сателлит построен на **несущей плате (carrier board)**, на которую устанавливается
-стандартная **ATX-совместимая материнская плата** через стойки. Вокруг неё размещается
-вся периферия: разъёмы внешнего БП 1200 Вт, DC-DC, FPGA SmartNIC, watchdog CH32V003, RTC DS3231SN.
+Оглавление раздела. Описание каждой платы — в отдельных файлах (plate-a/b/c).
 
-## Референсный модуль
+## Платформа (несущая)
 
-За основу взята **ASUS Pro WS WRX90E-SAGE SE** (AM5, WRX90E, PCIe 5.0, ATX).
-Она задаёт габариты, расположение стоек, слоты PCIe и высоты. Все остальные
-модули размещаются **вокруг** неё на нашей несущей.
+- [carrier-board.md](carrier-board.md) — несущая, WRX90E (1× sTR5, E-ATX), 4U × N
+- [pcie-topology.md](pcie-topology.md) — 7× PCIe 5.0, Alveo CPU1, SlimSAS (NVMe)
+- [power-budget.md](power-budget.md) — 1200/1600 Вт, U25/U30
+- [cooling.md](cooling.md) — ambient 10–35 °C
+- [hot-swap.md](hot-swap.md) — hot-plug не заявлен, U.2/E3.S
 
-## Что НЕ входит в системотехнику сателлита
+## Сателлиты (по отдельным файлам)
 
-- **PCIe P2P / ACS / xGMI** — это системотехника **концентратора** (см. `958ea03`),
-  не сателлита. В сателлите P2P не используется.
-- **SATA** — исключён. Используем только M.2 NVMe.
-- **Modbus-трансиверы на несущей** — не нужны (AIG-502 PLATE-A делает программно).
+- [plate-a-hard.md](plate-a-hard.md) — PLATE-A (HARD): полевые протоколы + AIG-502
+- [plate-b-soft.md](plate-b-soft.md) — PLATE-B (SOFT): умный дом (Matter/Zigbee/Thread/BLE)
+- [plate-c-life.md](plate-c-life.md) — PLATE-C (LIFE): скоростные каналы, DAS/JBOD, облака
 
-## Архитектурная метафора
+## Данные и сеть
 
-- **Митрополия** — концентратор (2P AMD EPYC, xGMI, NUMA): данные, Bus, Supervisor.
-- **Протектораты** — сателлиты PLATE-A/B/C: почти автономные «чёрные ящики»,
-  свои драйверы, СУБД, протоколы.
-- **Экспорт** — единственный канал сателлит → митрополия: данные, сигналы, телеметрия.
-- **Импорт** — только по запросу: CPU/память/NUMA/БД концентратора.
-- **Валюта** — данные.
-- **Иерархия вычислений**: Cloud → Fog → Edge → Dew. Митрополия (Cloud) → сателлиты PLATE-A/B/C (Fog) → сенсоры (Edge) → автономная работа сателлита без митрополии (Dew).
-- **Сеньор и вассалы** — концентратор повелевает сателлитами через Bus
-  (`Command`, `ModeChange`, `Shutdown`). Основное занятие — **управлять**.
+- [domain-priority.md](domain-priority.md) — HARD/SOFT/LIFE
+- [router-gateway.md](router-gateway.md) — роутер/шлюз, relay/smart host
+- [numa-tokio.md](numa-tokio.md) — NUMA + tokio
+- [monitoring.md](monitoring.md) — мониторинг
+- [alveo-p2p.md](alveo-p2p.md) — Alveo P2P (ReBAR/XRT)
+- [bill-of-materials.md](bill-of-materials.md) — BOM
+
+## Архитектурная метафора (см. ADR-0006)
+
+- **Митрополия** — концентратор (EPYC SP8 2P, xGMI): Bus, Dispatcher, API, smart host.
+- **Протектораты** — сателлиты PLATE-A/B/C (WRX90E, 1P): почти автономные, свои драйверы/протоколы.
+- **Экспорт** — данные/сигналы/телеметрия от сателлита к концентратору.
+- **Импорт** — только по запросу (CPU/память/NUMA/БД концентратора).
+- **Иерархия**: Cloud → Fog (сателлиты) → Edge (сенсоры) → Dew (автономная работа).
 
 Подробнее: [ADR-0006](../decisions/ADR-0006-satellite-sovereignty.md).
-
-## Документы
-
-- [carrier-board.md](carrier-board.md) — несущая: габариты, разъёмы, DC-DC, FPGA, watchdog, RTC
-- [power-budget.md](power-budget.md) — бюджет внешнего БП 1200 Вт, резерв-1/2
-- [pcie-topology.md](pcie-topology.md) — слоты PCIe и bifurcation (без ACS/P2P)
-- [router-gateway.md](router-gateway.md) — программные роутер/шлюз по доменам A/B/C
-- [cooling.md](cooling.md) — охлаждение, ambient 10–35 °C
-- [bill-of-materials.md](bill-of-materials.md) — BOM (без SATA)
-

@@ -13,12 +13,12 @@ PLATE-B (Soft) — **edge-шлюз** для **ЖКХ** (кондициониро
 
 | Параметр | Значение |
 |---|---|
-| CPU | AMD x86, **16+ ядер** |
-| RAM | **128 ГБ** |
-| Storage | **SSD RAID** |
-| Network | **10GbE** (мин. 1GbE) |
-| Security | **TPM 2.0** + Secure Boot |
-| Wi-Fi | **нет** (для сервера — только проводной Ethernet) |
+| CPU | AMD Threadripper PRO (sTR5, WRX90E) |
+| RAM | 8× DDR5 R-DIMM (до 2TB) |
+| Storage | 4× M.2 PCIe 5.0 + 2× SlimSAS (NVMe) |
+| Network | 2× 10G (Intel X710-AT2) |
+| Security | BMC AST2600 + Secure Boot |
+| Wi-Fi | нет (только проводной Ethernet) |
 
 ## NB-IoT (основной LPWAN)
 
