@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 async-trait = "0.1"
-tokio = { version = "1.40", features = ["full"] }
+tokio = { version = "1.40", features = ["rt-multi-thread", "time", "net", "io-util", "sync", "macros", "signal", "fs"] }
 tokio-util = { version = "0.7", features = ["codec"] }
 redis = { version = "0.27", features = ["tokio-comp"] }
 ciborium = "0.2"
@@ -61,9 +61,9 @@ serial_test = "3.1"
 [profile.release]
 lto = "fat"
 codegen-units = 1
-strip = false
+strip = "symbols"
 panic = "unwind"
-debug = true
+debug = "line-tables-only"
 
 [[bin]]
 name = "frontier"
