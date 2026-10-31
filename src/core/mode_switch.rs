@@ -271,4 +271,21 @@ mod tests {
         assert_eq!(Mode::HardSoft.enabled_count(), 2);
         assert_eq!(Mode::All.enabled_count(), 3);
     }
+
+    #[test]
+    fn degrade_restore_prev() {
+        let s = ModeState::with_mode(Mode::HardLife);
+        assert_eq!(s.get(), Mode::HardLife);
+        assert_eq!(s.degrade(), Mode::HardOnly);
+        assert_eq!(s.get(), Mode::HardOnly);
+        assert_eq!(s.restore(), Mode::HardLife);
+        assert_eq!(s.get(), Mode::HardLife);
+    }
+
+    #[test]
+    fn degrade_from_all_restore_all() {
+        let s = ModeState::with_mode(Mode::All);
+        assert_eq!(s.degrade(), Mode::HardSoft);
+        assert_eq!(s.restore(), Mode::All);
+    }
 }
