@@ -169,3 +169,9 @@ TimescaleDB). Отказ любого слоя не роняет концент�
 **Smart host** — конкретная роль relay: всегда через один назначенный узел, с аутентификацией, фильтрацией, логированием. В проекте: CORE — smart host для uplink (сателлит не пытается сам достучаться до облака/MQTT, он всегда отдаёт данные в CORE, а CORE решает, куда и как). Smart host — не open relay: аутентификация обязательна.
 
 **Open relay** — relay без аутентификации, принимает от любого отправителя. Грубая ошибка конфигурации, приводит к блокировке IP в чёрных списках. В проекте **не используется**: CORE — smart host (аутентификация обязательна).
+
+**CAP** — в распределённой системе при сбое сети (partition) можно гарантировать не более двух из трёх: Consistency, Availability, Partition tolerance. В проекте: гибрид — Redis/TimescaleDB (CP), Raw CBOR (AP).
+
+**2PC (two-phase commit)** — протокол распределённых транзакций (prepare/commit). В проекте: TimescaleDB (prepared transactions), Redis — MULTI/EXEC (не 2PC).
+
+**CP / AP** — CP: Consistency + Partition tolerance (Redis/TimescaleDB); AP: Availability + Partition tolerance (Raw CBOR, Satellite-Raw).
