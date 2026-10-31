@@ -59,6 +59,7 @@
 - [ ] **P3.24** `docs/system/domain-priority.md` — HARD/SOFT/LIFE (10/100/1000 мс), изоляция, backlog, FrontierState
 - [ ] **P3.25** `src/vm/` — CPU pinning (taskset/cgroup/affinity), NUMA 0-7/72-95/8-31 — TBD
 - [ ] **P3.26** `docs/system/hot-swap.md` — hot-swap БП (CRPS 1+1), диски M.2 (нет), память DDR5 (нет, x86), FPGA (нет)
+- [x] **P3.27** `docs/decisions/ADR-0016-concentrator-roles.md` — 4 типа концентраторов, frontier = 4-й (программно-аппаратный комплекс)
 
 ## P4 — on demand (client request)
 
