@@ -189,6 +189,43 @@ impl ModeState {
         }
         self.get()
     }
+
+    /// CAS-degrade: если current == expected, установить next и запомнить prev.
+    pub fn try_degrade(&self, expected: Mode) -> Option<(Mode, Mode)> {
+        let next = expected.degrade();
+        if next == expected {
+            return None;
+        }
+        match self.inner.compare_exchange(
+            expected.to_u8(),
+            next.to_u8(),
+            Ordering::AcqRel,
+            Ordering::Acquire,
+        ) {
+            Ok(_) => {
+                self.prev.store(expected.to_u8(), Ordering::Release);
+                Some((expected, next))
+            }
+            Err(_) => None,
+        }
+    }
+
+    /// CAS-restore: если current == expected, вернуть prev (если больше по enabled_count).
+    pub fn try_restore(&self, expected: Mode) -> Option<(Mode, Mode)> {
+        let prev = Mode::from_u8(self.prev.load(Ordering::Acquire));
+        if prev == expected || prev.enabled_count() <= expected.enabled_count() {
+            return None;
+        }
+        match self.inner.compare_exchange(
+            expected.to_u8(),
+            prev.to_u8(),
+            Ordering::AcqRel,
+            Ordering::Acquire,
+        ) {
+            Ok(_) => Some((expected, prev)),
+            Err(_) => None,
+        }
+    }
 }
 
 impl Default for ModeState {
