@@ -46,3 +46,13 @@
 - Язык общения: русский. Английский - имена типов/функций, ключевые слова, внешние API.
 - Кодировка файлов: UTF-8 без BOM.
 - Не использовать heredoc @'...'@ в длинных вставках - рвётся; короткие Add-Content.
+
+## 2026-11-01 (позже)
+
+- **README.md (docs/system)** — переписан как оглавление (ссылки на plate-a/b/c, платформа, данные/сеть, метафора). Без «PLATE-3», AM5/ATX.
+- **plate-a-hard.md** — создан (PLATE-A: полевые протоколы + AIG-502, WRX90E).
+- **plate-c-life.md** — создан (PLATE-C: каналы, DAS/JBOD, облака, WRX90E).
+- **plate-b-soft.md** — обновлён (WRX90E, sTR5, 8× R-DIMM, 2× 10G, BMC).
+- **bill-of-materials.md** — Threadripper PRO (sTR5), без Ryzen/AM5.
+- **Коммит**: 79e80ab, push в origin/main.
+- **Битые ссылки**: OK (проверено).
