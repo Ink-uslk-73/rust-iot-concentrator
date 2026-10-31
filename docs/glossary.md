@@ -102,6 +102,8 @@ TimescaleDB). Отказ любого слоя не роняет концент�
   СУБД, протоколы. См. `ADR-0006`.
 - **Сеньор** — концентратор, повелевает сателлитами через Bus
 - **HARD** (10 мс) — критический уровень: Modbus RTU, тайминги, радиоканал. Missed tick: Delay/Skip. NUMA: node 0, cores 0-7. См. `docs/system/domain-priority.md`.
+- **Hot-swap** — замена компонента без остановки системы и без команд подготовки (БП, диски). См. `docs/system/hot-swap.md`.
+- **Hot-plug** — добавление компонента без остановки системы, но с подготовкой ОС (USB, новый диск). См. `docs/system/hot-swap.md`.
 - **SOFT** (100 мс) — маршрутизация, состояния, метрики. Missed tick: Skip. NUMA: node 1, cores 72-95.
 - **LIFE** (1000 мс) — логирование, heartbeat, статистика, кокпит. Missed tick: Burst. NUMA: node 0, cores 8-31.
   (`Command`, `ModeChange`, `Shutdown`). См. `ADR-0006`.

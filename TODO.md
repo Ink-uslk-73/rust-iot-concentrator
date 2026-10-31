@@ -58,6 +58,7 @@
 - [ ] **P3.23** `config/satellite/<id>.toml` — конфиги для PLATE-A/B/C (драйверы, СУБД, протоколы), ADR-0005
 - [ ] **P3.24** `docs/system/domain-priority.md` — HARD/SOFT/LIFE (10/100/1000 мс), изоляция, backlog, FrontierState
 - [ ] **P3.25** `src/vm/` — CPU pinning (taskset/cgroup/affinity), NUMA 0-7/72-95/8-31 — TBD
+- [ ] **P3.26** `docs/system/hot-swap.md` — hot-swap БП (CRPS 1+1), диски M.2 (нет), память DDR5 (нет, x86), FPGA (нет)
 
 ## P4 — on demand (client request)
 
