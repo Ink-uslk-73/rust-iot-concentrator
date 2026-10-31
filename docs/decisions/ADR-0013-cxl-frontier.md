@@ -45,5 +45,5 @@ Frontier — сателлитная архитектура (митрополия
 
 - [ADR-0008: Фронтир](ADR-0008-frontier-term.md) — 7 состояний;
 - [ADR-0014: PCIe NTB backplane](ADR-0014-pcie-ntb-backplane.md) — 2 × PEX 8749;
-- [pcie-ntb-backplane.md](../system/pcie-ntb-backplane.md) — инженерное решение;
+- [pcie-topology.md](../system/pcie-topology.md) — инженерное решение;
 - [TODO.md](../../TODO.md) — P4.12 (CXL future).

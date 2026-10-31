@@ -9,7 +9,7 @@
 
 ## Референсный модуль
 
-За основу взята **ASUS ProArt X870E-Creator WiFi** (AM5, X870E, PCIe 5.0, ATX).
+За основу взята **ASUS Pro WS WRX90E-SAGE SE** (AM5, WRX90E, PCIe 5.0, ATX).
 Она задаёт габариты, расположение стоек, слоты PCIe и высоты. Все остальные
 модули размещаются **вокруг** неё на нашей несущей.
 
@@ -42,5 +42,4 @@
 - [router-gateway.md](router-gateway.md) — программные роутер/шлюз по доменам A/B/C
 - [cooling.md](cooling.md) — охлаждение, ambient 10–35 °C
 - [bill-of-materials.md](bill-of-materials.md) — BOM (без SATA)
-- [reference/asus-proart-x870e-creator.md](reference/asus-proart-x870e-creator.md) — выжимка из manual ASUS
 

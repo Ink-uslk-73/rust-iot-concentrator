@@ -21,7 +21,7 @@
 
 ## PLATE-C (Life) = несущая + ATX (ASUS) + FPGA SmartNIC
 
-- **ATX (ASUS ProArt X870E-Creator)** на несущей.
+- **ATX (ASUS Pro WS WRX90E-SAGE SE)** на несущей.
 - **FPGA SmartNIC** (50 Вт) в PCIEX16(G5)_1.
 - **RTC DS3231SN** (I2C, `dtoverlay=i2c-rtc,ds3231`).
 - **Watchdog CH32V003** (GPIO).
@@ -43,3 +43,9 @@
 - [ ] Ёмкость UPS.
 - [ ] Адресация Modbus TCP: статическая или DHCP?
 
+
+## Relay / Smart host
+
+- CORE — **smart host** для uplink: сателлит отдаёт данные в CORE, CORE решает, куда (MQTT/HTTP/OPC UA).
+- **Не open relay**: аутентификация обязательна (mTLS/токены).
+- Satellite-Raw → CORE-Raw по PCIe P2P — это **relay** (пересылка без изменения).

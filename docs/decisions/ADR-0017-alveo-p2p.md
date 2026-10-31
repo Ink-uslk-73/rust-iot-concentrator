@@ -17,6 +17,8 @@ BIOS (Above 4G, Large BAR, IO Memory base 12T), ACS off, IOMMU off (риск и�
 - BIOS: 12T / Above 4G / ACS off — P3.32.
 - P2P только на одном PCIe switch (local), cross-socket — через xGMI (ADR-0006).
 
+- **FPGA-to-FPGA**: Alveo ↔ Alveo (или Alveo ↔ NVMe) — P2P через ReBAR, **только на одном PCIe switch** (local). Cross-socket — через xGMI (медленнее, см. ADR-0014).
+
 ## Следствия
 
 + Скорость: P2P внутри сателлита, без RAM хоста.

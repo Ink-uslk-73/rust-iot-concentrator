@@ -33,3 +33,4 @@ part*.ps1
 # local artifacts
 src/main.rs.new
 src/main.rs.part*.bak
+.vs/

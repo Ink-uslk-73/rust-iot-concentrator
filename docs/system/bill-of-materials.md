@@ -7,7 +7,7 @@
 
 | Компонент | Кол-во | Примечание |
 |---|---|---|
-| ASUS ProArt X870E-Creator WiFi | 1 | reference module, ATX 30.5 × 24.4 |
+| ASUS Pro WS WRX90E-SAGE SE | 1 | reference module, ATX 30.5 × 24.4 |
 | AMD Ryzen 9 9000 (AM5) | 1 | TDP ~250 Вт sustained |
 | DDR5 ECC UDIMM | 4 | до 192 GB (manual), ECC подтверждён |
 | NVMe M.2 (PCIe 5.0 / 4.0) | до 4 | M.2_1/2 — PCIe 5.0, M.2_3/4 — PCIe 4.0 |

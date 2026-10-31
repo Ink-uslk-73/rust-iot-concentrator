@@ -1,7 +1,7 @@
 # Architecture — Frontier (Telecom IoT Concentrator v4.0)
 
 **Статус:** accepted
-**Связанные:** [ADR-0008](../decisions/ADR-0008-frontier-term.md), [ADR-0015](../decisions/ADR-0015-combination-innovation.md), [domain-priority.md](system/domain-priority.md), [glossary.md](glossary.md).
+**Связанные:** [ADR-0008](decisions/ADR-0008-frontier-term.md), [ADR-0015](decisions/ADR-0015-combination-innovation.md), [domain-priority.md](system/domain-priority.md), [glossary.md](glossary.md).
 
 ## Layers
 
@@ -54,7 +54,7 @@ Degradation: All -> HardSoft -> HardOnly. HARD never degrades.
 | `Patterned` | motifs / wavelets |
 | `Explored` | Cloud: HES/MDMS |
 
-См. [ADR-0008](../decisions/ADR-0008-frontier-term.md).
+См. [ADR-0008](decisions/ADR-0008-frontier-term.md).
 
 ## main.rs split (app/)
 
@@ -96,7 +96,7 @@ Degradation: All -> HardSoft -> HardOnly. HARD never degrades.
 
 - Браузер, `http://127.0.0.1:1967/`;
 - REST + SSE, mTLS (`docs/api/telemetry.md`);
-- См. [ADR-0011](../decisions/ADR-0011-tablet-first-telemetry.md).
+- См. [ADR-0011](decisions/ADR-0011-tablet-first-telemetry.md).
 
 ## Protocols: downlink/uplink
 
@@ -111,12 +111,12 @@ Uplink: MQTT, HTTP/REST, OPC UA, Modbus TCP.
 
 ## Новация (ADR-0015)
 
-Комбинация **DLMS/COSEM** + **NB-IoT** + **LTE-M** + **edge-шлюз (PLATE-B)** + **Frontier (7 состояний)** + **Router WI** — **новация**, зафиксирована в [ADR-0015](../decisions/ADR-0015-combination-innovation.md).
+Комбинация **DLMS/COSEM** + **NB-IoT** + **LTE-M** + **edge-шлюз (PLATE-B)** + **Frontier (7 состояний)** + **Router WI** — **новация**, зафиксирована в [ADR-0015](decisions/ADR-0015-combination-innovation.md).
 
 ## Ссылки
 
-- [ADR-0008: Фронтир](../decisions/ADR-0008-frontier-term.md) — 7 состояний;
-- [ADR-0015: Комбинация](../decisions/ADR-0015-combination-innovation.md) — новация;
+- [ADR-0008: Фронтир](decisions/ADR-0008-frontier-term.md) — 7 состояний;
+- [ADR-0015: Комбинация](decisions/ADR-0015-combination-innovation.md) — новация;
 - [domain-priority.md](system/domain-priority.md) — HARD/SOFT/LIFE;
 - [glossary.md](glossary.md) — термины;
 - [telemetry.md](api/telemetry.md) — REST + SSE;
