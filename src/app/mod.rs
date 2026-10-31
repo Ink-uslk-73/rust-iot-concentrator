@@ -35,7 +35,7 @@ pub async fn run(cli: Cli) -> anyhow::Result<()> {
             ));
 
             let st_h = storage::init(&cli.database_url, cfg.clone()).await;
-            storage::spawn_tasks(st_h.cache.clone(), st_h.raw.clone(), None, bus_h.bus.clone(), cfg.clone());
+            storage::spawn_tasks(st_h.cache.clone(), st_h.raw.clone(), None, bus_h.bus.clone(), cfg.clone(), dom_h.supervisor.token());
 
             domains::spawn_domains(
                 &mut dom_h.supervisor,

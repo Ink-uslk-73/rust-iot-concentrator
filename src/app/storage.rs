@@ -1,6 +1,7 @@
 //! src/app/storage.rs - PostgreSQL + Redis cache + RawStore + cache_tasks.
 
 use std::sync::Arc;
+use tokio_util::sync::CancellationToken;
 use std::sync::RwLock;
 use std::time::Duration;
 
@@ -53,8 +54,9 @@ pub fn spawn_tasks(
     pool: Option<crate::storage::pg::PgPool>,
     bus: Bus,
     cfg: Arc<RwLock<ConcentratorConfig>>,
+    token: CancellationToken,
 ) {
     let flush_sec = cfg.read().unwrap().cache.flush_interval_sec.unwrap_or(60);
-    spawn_cache_tasks(cache, raw, pool, bus, Duration::from_secs(flush_sec), Duration::from_secs(60));
+    spawn_cache_tasks(cache, raw, pool, bus, Duration::from_secs(flush_sec), Duration::from_secs(60), token);
 }
 
