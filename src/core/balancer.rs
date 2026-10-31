@@ -104,12 +104,11 @@ impl Balancer {
             self.high_streak = self.high_streak.saturating_add(1);
             self.low_streak = 0;
             if self.high_streak >= self.cfg.hysteresis_ticks {
-                let next = current.degrade();
-                if next != current {
+                if let Some((cur, next)) = self.try_degrade(current) {
                     self.high_streak = 0;
-                    if self.try_set(current, next) {
+                    {
                         warn!(
-                            from = current.name(),
+                            from = cur.name(),
                             to = next.name(),
                             hard = %format!("{:.0}%", hard * 100.0),
                             soft = %format!("{:.0}%", soft * 100.0),
@@ -118,7 +117,7 @@ impl Balancer {
                         );
                         self.alert(
                             DiagLevel::Warning,
-                            format!("DEGRADED {} -> {}", current.name(), next.name()),
+                            format!("DEGRADED {} -> {}", cur.name(), next.name()),
                         );
                         return Some(next);
                     }
@@ -132,18 +131,17 @@ impl Balancer {
                 self.low_streak = self.low_streak.saturating_add(1);
                 self.high_streak = 0;
                 if self.low_streak >= self.cfg.hysteresis_ticks {
-                    let next = current.restore();
-                    if next != current {
+                    if let Some((cur, next)) = self.try_restore(current) {
                         self.low_streak = 0;
-                        if self.try_set(current, next) {
+                        {
                             info!(
-                                from = current.name(),
+                                from = cur.name(),
                                 to = next.name(),
                                 "balancer: recover"
                             );
                             self.alert(
                                 DiagLevel::Info,
-                                format!("RECOVERED {} -> {}", current.name(), next.name()),
+                                format!("RECOVERED {} -> {}", cur.name(), next.name()),
                             );
                             return Some(next);
                         }
@@ -160,11 +158,20 @@ impl Balancer {
         None
     }
 
-    fn try_set(&mut self, expected: Mode, new: Mode) -> bool {
-        match self.mode.compare_exchange(expected, new) {
-            Ok(_) => { self.last_auto = Some(new); true }
-            Err(_actual) => false,
-        }
+    /// CAS-degrade: если current == expected, установить next и запомнить prev.
+    /// Обновляет last_auto при успехе (manual override protection).
+    fn try_degrade(&mut self, current: Mode) -> Option<(Mode, Mode)> {
+        let r = self.mode.try_degrade(current)?;
+        self.last_auto = Some(r.1);
+        Some(r)
+    }
+
+    /// CAS-restore: если current == expected, вернуть prev (если больше по enabled_count).
+    /// Обновляет last_auto при успехе.
+    fn try_restore(&mut self, current: Mode) -> Option<(Mode, Mode)> {
+        let r = self.mode.try_restore(current)?;
+        self.last_auto = Some(r.1);
+        Some(r)
     }
 
     fn alert(&self, level: DiagLevel, msg: String) {

@@ -210,20 +210,33 @@ impl ModeState {
         }
     }
 
-    /// CAS-restore: если current == expected, вернуть prev (если больше по enabled_count).
+    /// CAS-restore: 1) если prev > expected — CAS на prev; 2) fallback Mode::restore(expected).
     pub fn try_restore(&self, expected: Mode) -> Option<(Mode, Mode)> {
         let prev = Mode::from_u8(self.prev.load(Ordering::Acquire));
-        if prev == expected || prev.enabled_count() <= expected.enabled_count() {
+        // 1. prev > expected (после degrade)
+        if prev != expected && prev.enabled_count() > expected.enabled_count() {
+            if self.inner.compare_exchange(
+                expected.to_u8(),
+                prev.to_u8(),
+                Ordering::AcqRel,
+                Ordering::Acquire,
+            ).is_ok() {
+                return Some((expected, prev));
+            }
             return None;
         }
-        match self.inner.compare_exchange(
+        // 2. fallback: Mode::restore(expected) (без prev)
+        let next = expected.restore();
+        if next == expected { return None; }
+        if self.inner.compare_exchange(
             expected.to_u8(),
-            prev.to_u8(),
+            next.to_u8(),
             Ordering::AcqRel,
             Ordering::Acquire,
-        ) {
-            Ok(_) => Some((expected, prev)),
-            Err(_) => None,
+        ).is_ok() {
+            Some((expected, next))
+        } else {
+            None
         }
     }
 }
