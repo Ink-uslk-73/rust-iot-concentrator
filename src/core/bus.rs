@@ -100,6 +100,9 @@ impl Bus {
         )
     }
 
+    /// Per-priority send:
+    /// - Hard: try_send (не блокировать; drop-on-full);
+    /// - Soft/Life: send с timeout (HARD: 1ms, SOFT: 10ms, LIFE: 100ms).
     pub async fn send(&self, msg: BusMessage) -> Result<(), BusError> {
         let ch = msg.payload.channel();
         let tx = match ch {
@@ -109,7 +112,29 @@ impl Bus {
             Channel::Diagnostics => &self.diagnostics,
         };
         let capacity = tx.max_capacity();
-        let res = tx.send(msg).await.map_err(|_| BusError::Closed(ch));
+
+        let res = match msg.priority {
+            Priority::Hard => {
+                // HARD: никогда не блокировать
+                tx.try_send(msg).map_err(|e| match e {
+                    mpsc::error::TrySendError::Full(_) => BusError::Full(ch),
+                    mpsc::error::TrySendError::Closed(_) => BusError::Closed(ch),
+                })
+            }
+            Priority::Soft | Priority::Life => {
+                let timeout = match msg.priority {
+                    Priority::Soft => std::time::Duration::from_millis(10),
+                    Priority::Life => std::time::Duration::from_millis(100),
+                    Priority::Hard => unreachable!(),
+                };
+                match tokio::time::timeout(timeout, tx.send(msg)).await {
+                    Ok(Ok(())) => Ok(()),
+                    Ok(Err(_)) => Err(BusError::Closed(ch)),
+                    Err(_) => Err(BusError::Full(ch)),
+                }
+            }
+        };
+
         if res.is_err() {
             self.metrics.record_bus_drop();
         }
