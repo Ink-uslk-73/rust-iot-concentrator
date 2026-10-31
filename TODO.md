@@ -116,3 +116,20 @@
 
 > **Статус: R&D.** Контракты фиксируются раньше реализации. Эмуляторы — штатно.
 
+
+## P3.28 — NUMA + tokio (HARD dedicated OS-thread)   [ ]
+- [ ] HARD: std::thread::Builder + block_on + sched_setaffinity на этом потоке
+- [ ] mlockall/mempolicy — наследование на dedicated поток
+- [ ] Проверка: numactl -H, /proc/<tid>/stat поле 39, numa_maps
+- [ ] Ссылка: docs/system/numa-tokio.md
+
+## P3.31 — Alveo P2P (ReBAR/XRT, PLATE-B/C)   [ ]
+- [ ] PeerLink::FpgaP2p (Alveo/ReBAR/XRT) — опционально
+- [ ] StoreForward — P2P drain (NVMe/Alveo)
+- [ ] Ссылка: docs/system/alveo-p2p.md
+
+## P3.32 — BIOS: 12T/Above 4G/ACS off (Alveo P2P)   [ ]
+- [ ] Above 4G decoding, Large BAR support, IO Memory base 12T
+- [ ] ACS off (P2P), IOMMU off (риск изоляции)
+- [ ] Ссылка: docs/system/alveo-p2p.md
+
