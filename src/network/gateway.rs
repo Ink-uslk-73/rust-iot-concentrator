@@ -1,0 +1,30 @@
+//! src/network/gateway.rs - Gateway (stub, P3.35).
+use std::sync::Arc;
+use std::time::Duration;
+use crate::metrics::registry::Registry;
+use super::{NetworkNode, NodeKind};
+
+pub struct GatewayNode;
+
+impl GatewayNode {
+    pub fn new() -> Self { Self }
+}
+
+impl NetworkNode for GatewayNode {
+    fn name(&self) -> &'static str { "gateway" }
+    fn kind(&self) -> NodeKind { NodeKind::Gateway }
+    fn start(&self, registry: Arc<Registry>) -> Result<(), String> {
+        let reg = registry.clone();
+        tokio::spawn(async move {
+            loop {
+                let now = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map(|d| d.as_millis() as f64)
+                    .unwrap_or(0.0);
+                reg.set_gauge("alive.gateway", now);
+                tokio::time::sleep(Duration::from_secs(1)).await;
+            }
+        });
+        Ok(())
+    }
+}

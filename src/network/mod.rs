@@ -5,8 +5,12 @@
 use std::sync::Arc;
 use crate::metrics::registry::Registry;
 
+pub mod bridge;
 pub mod firewall;
+pub mod gateway;
 pub mod router;
+pub mod router_soft;
+pub mod switch;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NodeKind {
@@ -37,5 +41,9 @@ pub fn create_all() -> Vec<Arc<dyn NetworkNode>> {
     vec![
         Arc::new(router::RouterNode::new()),
         Arc::new(firewall::FirewallNode::new()),
+        Arc::new(switch::SwitchNode::new()),
+        Arc::new(bridge::BridgeNode::new()),
+        Arc::new(gateway::GatewayNode::new()),
+        Arc::new(router_soft::RouterSoftNode::new()),
     ]
 }
