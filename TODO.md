@@ -203,3 +203,17 @@
 - [ ] trait NetworkNode (Router real/soft, Switch, Bridge, Gateway, Firewall)
 - [ ] Плагины (оверлей, протоколы), конфиг (TOML), метрики (UI, чек-лист)
 - [ ] docs/system/network-nodes.md — финализировать
+
+## P3.36 — Реструктуризация protocols/ (не затягивать)
+
+- [ ] common/ (adapter, publish, health) — общее для всех сателлитов
+- [ ] plate_a/ (поле + AIG-502), plate_b/ (умный дом), plate_c/ (каналы, router, firewall)
+- [ ] create_all() — из plate_a/plate_b/plate_c/
+- [ ] После P3.33/P3.34, но не затягивать
+
+## Коммуникация для всего комплекса ПАК
+
+- [ ] Единая шина/протокол для всего ПАК (концентратор + сателлиты + планшет + UI)
+- [ ] MAN (Unicast P2P), туннели (mTLS/WireGuard), smart host (CORE)
+- [ ] Интеграция: Bus (внутри), API/SSE (наружу), MQTT/HTTP (uplink)
+- [ ] Связано с P3.35 (NetworkNode), P3.34 (телеметрия SSE)
