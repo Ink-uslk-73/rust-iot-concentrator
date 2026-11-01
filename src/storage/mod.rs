@@ -1,6 +1,7 @@
 //! src/storage/mod.rs - storage layer (PostgreSQL + JSON fallback).
 
 pub mod raw;
+pub mod telemetry;
 pub mod baselines;
 pub mod cache;
 pub mod events;
