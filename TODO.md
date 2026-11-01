@@ -163,3 +163,43 @@
 - [ ] **CAN-анализатор/логгер**: CANedge, PCAN, SocketCAN.
 - [ ] **Шаблон**: работа по шаблону (конвертация протоколов), апгрейд/апдейт Alveo.
 - [ ] **P2P**: оба Alveo на CPU1 (один switch), FPGA-to-FPGA, Alveo ↔ NVMe.
+
+## P3.33 — Роутер (real/soft) + брандмауэр (stub)
+
+- [ ] trait NetworkNode (Router real/soft, Firewall) — stub
+- [ ] По сателлиту: брандмауэр + маршрутизатор (L3, transit)
+- [ ] У митрополии: общий брандмауэр + маршрутизатор (L3, между сетями)
+- [ ] alive.<PLATE> для роутера/брандмауэра
+
+## P3.34 — Телеметрия SSE + history
+
+- [ ] /api/v1/telemetry/stream (SSE, как events::stream)
+- [ ] /api/v1/telemetry/history/:sensor_id (TimescaleDB)
+- [ ] e2e: modbus -> Bus -> API/SSE (проверить)
+- [ ] mosquitto (5.166.240.65) — реальная телеметрия
+
+## P3.35 — NetworkNode pattern (после P3.33/P3.34)
+
+- [ ] trait NetworkNode (Router real/soft, Switch, Bridge, Gateway, Firewall)
+- [ ] Плагины (оверлей, протоколы), конфиг (TOML), метрики (UI, чек-лист)
+- [ ] docs/system/network-nodes.md — финализировать
+
+## P3.33 — Роутер (real/soft) + брандмауэр (stub)
+
+- [ ] trait NetworkNode (Router real/soft, Firewall) — stub
+- [ ] По сателлиту: брандмауэр + маршрутизатор (L3, transit)
+- [ ] У митрополии: общий брандмауэр + маршрутизатор (L3, между сетями)
+- [ ] alive.<PLATE> для роутера/брандмауэра
+
+## P3.34 — Телеметрия SSE + history
+
+- [ ] /api/v1/telemetry/stream (SSE, как events::stream)
+- [ ] /api/v1/telemetry/history/:sensor_id (TimescaleDB)
+- [ ] e2e: modbus -> Bus -> API/SSE (проверить)
+- [ ] mosquitto (5.166.240.65) — реальная телеметрия
+
+## P3.35 — NetworkNode pattern (после P3.33/P3.34)
+
+- [ ] trait NetworkNode (Router real/soft, Switch, Bridge, Gateway, Firewall)
+- [ ] Плагины (оверлей, протоколы), конфиг (TOML), метрики (UI, чек-лист)
+- [ ] docs/system/network-nodes.md — финализировать

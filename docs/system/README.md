@@ -23,6 +23,7 @@
 
 - [domain-priority.md](domain-priority.md) — HARD/SOFT/LIFE
 - [router-gateway.md](router-gateway.md) — роутер/шлюз, relay/smart host
+- [network-nodes.md](network-nodes.md) — паттерн NetworkNode (router, switch, bridge, gateway, firewall)
 - [numa-tokio.md](numa-tokio.md) — NUMA + tokio
 - [monitoring.md](monitoring.md) — мониторинг
 - [alveo-p2p.md](alveo-p2p.md) — Alveo P2P (ReBAR/XRT)
