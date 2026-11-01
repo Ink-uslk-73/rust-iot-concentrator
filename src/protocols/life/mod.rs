@@ -1,9 +1,7 @@
 //! src/protocols/life/mod.rs
-pub mod firewall;
 pub mod http;
 pub mod mqtt;
 pub mod polling;
-pub mod router;
 pub mod terminal;
 
 use std::sync::Arc;
@@ -15,7 +13,5 @@ pub fn create_all() -> Vec<Arc<dyn ProtocolAdapter>> {
         Arc::new(http::HttpAdapter::new()),
         Arc::new(terminal::TerminalAdapter::new()),
         Arc::new(polling::PollingAdapter::new()),
-        Arc::new(router::RouterAdapter::new()),
-        Arc::new(firewall::FirewallAdapter::new()),
     ]
 }

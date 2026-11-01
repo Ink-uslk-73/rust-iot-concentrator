@@ -1,21 +1,19 @@
-//! src/protocols/life/router.rs - Router (transit, stub, P3.33).
+//! src/network/router.rs - Router (real/soft, stub, P3.35).
 use std::sync::Arc;
 use std::time::Duration;
-use crate::core::mode_switch::Priority;
 use crate::metrics::registry::Registry;
-use crate::protocols::{ProtocolAdapter, PublishFn};
+use super::{NetworkNode, NodeKind};
 
-pub struct RouterAdapter;
+pub struct RouterNode;
 
-impl RouterAdapter {
+impl RouterNode {
     pub fn new() -> Self { Self }
 }
 
-impl ProtocolAdapter for RouterAdapter {
+impl NetworkNode for RouterNode {
     fn name(&self) -> &'static str { "router" }
-    fn priority(&self) -> Priority { Priority::Life }
-    fn heartbeat_name(&self) -> Option<&'static str> { Some("PLATE-C") }
-    fn start(&self, _publish: PublishFn, registry: Arc<Registry>) -> Result<(), String> {
+    fn kind(&self) -> NodeKind { NodeKind::RouterReal }
+    fn start(&self, registry: Arc<Registry>) -> Result<(), String> {
         let reg = registry.clone();
         tokio::spawn(async move {
             loop {
@@ -23,7 +21,7 @@ impl ProtocolAdapter for RouterAdapter {
                     .duration_since(std::time::UNIX_EPOCH)
                     .map(|d| d.as_millis() as f64)
                     .unwrap_or(0.0);
-                reg.set_gauge("alive.PLATE-C", now);
+                reg.set_gauge("alive.router", now);
                 tokio::time::sleep(Duration::from_secs(1)).await;
             }
         });

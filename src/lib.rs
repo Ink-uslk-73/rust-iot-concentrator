@@ -8,6 +8,7 @@ pub mod hard_pool;
 pub mod metrics;
 pub mod monitoring;
 pub mod numa;
+pub mod network;
 pub mod protocols;
 pub mod storage;
 pub mod terminal;
