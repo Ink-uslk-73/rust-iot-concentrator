@@ -28,6 +28,7 @@
 - [monitoring.md](monitoring.md) — мониторинг
 - [alveo-p2p.md](alveo-p2p.md) — Alveo P2P (ReBAR/XRT)
 - [bill-of-materials.md](bill-of-materials.md) — BOM
+- [raw-abstraction.md](raw-abstraction.md) — Raw как абстракция (P3.37)
 
 ## Архитектурная метафора (см. ADR-0006)
 

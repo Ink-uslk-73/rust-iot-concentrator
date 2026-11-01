@@ -217,3 +217,12 @@
 - [ ] MAN (Unicast P2P), туннели (mTLS/WireGuard), smart host (CORE)
 - [ ] Интеграция: Bus (внутри), API/SSE (наружу), MQTT/HTTP (uplink)
 - [ ] Связано с P3.35 (NetworkNode), P3.34 (телеметрия SSE)
+
+## P3.37 — Raw как абстракция (RawSource, StreamParser, Statistics, Patterns)
+
+- [ ] trait RawSource (pcap, DPDK, AF_XDP, файл, CBOR) — позже
+- [ ] trait StreamParser (протоколы -> поля) — позже
+- [ ] Statistics (агрегаты, распределения, аномалии) — позже
+- [ ] Patterns (корреляции, триггеры) — позже
+- [ ] docs/system/raw-abstraction.md — финализировать
+- [ ] Не блокирует P3.34 (telemetry SSE/history), P3.36 (реструктуризация)
