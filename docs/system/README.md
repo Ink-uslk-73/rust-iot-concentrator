@@ -8,6 +8,7 @@
 ## Платформа (несущая)
 
 - [carrier-board.md](carrier-board.md) — несущая, WRX90E (1× sTR5, E-ATX), 4U × N
+- [satellite-vm.md](satellite-vm.md) — 4 VM (DB, NET, BACKUP, BOT) + host (CORE)
 - [pcie-topology.md](pcie-topology.md) — 7× PCIe 5.0, Alveo CPU1, SlimSAS (NVMe)
 - [power-budget.md](power-budget.md) — 1200/1600 Вт, U25/U30
 - [cooling.md](cooling.md) — ambient 10–35 °C

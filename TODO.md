@@ -226,3 +226,21 @@
 - [ ] Patterns (корреляции, триггеры) — позже
 - [ ] docs/system/raw-abstraction.md — финализировать
 - [ ] Не блокирует P3.34 (telemetry SSE/history), P3.36 (реструктуризация)
+
+## P3.38 — VM-модель (4 VM + host)
+
+- [x] host (CORE): Bus, Dispatcher, API, SatelliteRegistry, alive.<PLATE>, Redis (systemd, watchdog, hot-path), CORE-Raw (NVMe)
+- [x] DB-VM: TimescaleDB (агрегаты)
+- [x] NET-VM: NetworkNode (Router/Switch/Bridge/Gateway/Firewall), VLAN
+- [x] BACKUP-VM: фоновый бэкап (снапшоты <=32, ротация)
+- [x] BOT-VM: Lua + Python, FSM, watchdog (внешний), багтрек (SQLite), ротация <=32
+- [x] PLATE-A/B/C — адаптеры (в CORE), не VM
+- [x] Диски: Raw (NVMe), TimescaleDB (NVMe), BACKUP (SATA), логи ОС (SATA)
+- [x] Порядок: Raw -> TimescaleDB -> BACKUP (фоновый)
+- [ ] docs/system/satellite-vm.md — финализировать
+
+## P3.39 — Rust runtime (смотрим, не усложняем)
+
+- [ ] Оценить Kata 4.0 (runtime-rs/Dragonball) только если BOT-VM нужна эфемерность/старт <1 с
+- [ ] Оценить rust-vmm только если libvirt не хватает
+- [ ] Не переписывать host (CORE) на Rust сейчас

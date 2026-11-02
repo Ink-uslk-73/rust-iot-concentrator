@@ -35,3 +35,8 @@
 - **P3.33** — роутер stub (real/soft), брандмауэр stub.
 - **P3.35** — паттерн NetworkNode (после P3.33/P3.34).
 - **Сейчас** — документация, не код.
+
+## Где живут
+
+- NetworkNode (Router/Switch/Bridge/Gateway/Firewall) — в NET-VM (см. satellite-vm.md).
+- PLATE-A/B/C — адаптеры в CORE, не VM.
