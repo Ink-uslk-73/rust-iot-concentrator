@@ -1,6 +1,10 @@
 //! src/protocols/mod.rs - protocol adapters.
 
+pub mod common;
 pub mod hard;
+pub mod plate_a;
+pub mod plate_b;
+pub mod plate_c;
 pub mod life;
 pub mod soft;
 
