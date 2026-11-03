@@ -1,12 +1,13 @@
-//! src/core/mode_switch.rs - Mode switch (7 variants).
-//!
-//! Atomic storage via AtomicU8. Thread-safe.
-//! Degradation: LIFE -> SOFT. HARD never degrades.
+use serde::{Serialize, Deserialize};
+// src/core/mode_switch.rs - Mode switch (7 variants).
+//
+// Atomic storage via AtomicU8. Thread-safe.
+// Degradation: LIFE -> SOFT. HARD never degrades.
 
 use std::sync::atomic::{AtomicU8, Ordering};
 use std::sync::Arc;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum Priority {
     Hard,
     Soft,

@@ -47,7 +47,7 @@ impl BusPayload {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Channel { Signals, Telemetry, Status, Diagnostics }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BusMessage {
     pub seq: u64,
     pub source: &'static str,

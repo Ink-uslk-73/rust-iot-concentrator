@@ -2,7 +2,7 @@
 
 use axum::{extract::{Path, Query, State}, http::StatusCode, Json};
 use axum::response::sse::{Event as SseEvent, Sse};
-use futures_util::stream;
+use tokio_stream::StreamExt;
 use serde::Deserialize;
 use std::convert::Infallible;
 use std::time::Duration;
@@ -57,14 +57,20 @@ pub async fn history(
 }
 
 pub async fn stream(
-    State(_s): State<SharedState>,
+    State(s): State<SharedState>,
 ) -> Sse<impl futures_util::Stream<Item = Result<SseEvent, Infallible>>> {
-    let s = stream::unfold((), |_| async {
-        tokio::time::sleep(Duration::from_secs(1)).await;
-        // Redis-stub: позже — Bus-подписка (P3.34, часть 2)
-        let ev = SseEvent::default().event("telemetry").data("{}");
-        Some((Ok(ev), ()))
-    });
+    let (_fallback_tx, fallback_rx) = tokio::sync::broadcast::channel(1);
+    let rx = if let Some(tx) = &s.telemetry_tx {
+        tx.subscribe()
+    } else {
+        fallback_rx
+    };
+    let s = tokio_stream::wrappers::BroadcastStream::new(rx)
+        .filter_map(|result| result.ok())
+        .map(|msg| {
+            let data = serde_json::to_string(&msg).unwrap_or_default();
+            Ok(SseEvent::default().event("telemetry").data(data))
+        });
     Sse::new(s).keep_alive(
         axum::response::sse::KeepAlive::new().interval(Duration::from_secs(15))
     )

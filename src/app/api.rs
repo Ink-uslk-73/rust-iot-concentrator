@@ -26,6 +26,7 @@ pub fn build_state(
     bus: Bus,
     config: Arc<RwLock<ConcentratorConfig>>,
     satellites: Arc<SatelliteRegistry>,
+    telemetry_tx: Option<tokio::sync::broadcast::Sender<crate::core::bus::BusMessage>>,
 ) -> Arc<AppState> {
     Arc::new(AppState {
         pool,
@@ -37,6 +38,7 @@ pub fn build_state(
         bus,
         config,
         satellites,
+        telemetry_tx,
     })
 }
 

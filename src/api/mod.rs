@@ -34,6 +34,7 @@ pub struct AppState {
     pub bus: Bus,
     pub config: Arc<RwLock<ConcentratorConfig>>,
     pub satellites: Arc<SatelliteRegistry>,
+    pub telemetry_tx: Option<tokio::sync::broadcast::Sender<crate::core::bus::BusMessage>>,
 }
 
 pub type SharedState = Arc<AppState>;

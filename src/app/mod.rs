@@ -67,6 +67,7 @@ pub async fn run(cli: Cli) -> anyhow::Result<()> {
                 bus_h.bus.clone(),
                 cfg.clone(),
                 sat_h.registry.clone(),
+                None, // telemetry_tx (P3.34, часть 2 — публикация позже)
             );
             let api_handle = api::serve(&cli.api_addr, state).await?;
 
