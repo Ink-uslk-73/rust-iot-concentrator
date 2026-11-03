@@ -10,9 +10,9 @@ pub struct DispatcherHandles {
     pub domain_receivers: DomainReceivers,
 }
 
-pub fn init(bus: Bus) -> DispatcherHandles {
+pub fn init(bus: Bus, telemetry_tx: Option<tokio::sync::broadcast::Sender<crate::core::bus::BusMessage>>) -> DispatcherHandles {
     let mode = ModeState::with_mode(Mode::All);
-    let (dispatcher, domain_receivers) = Dispatcher::new(mode.clone(), bus, 256);
+    let (dispatcher, domain_receivers) = Dispatcher::new(mode.clone(), bus, 256, telemetry_tx);
     DispatcherHandles { mode, dispatcher, domain_receivers }
 }
 

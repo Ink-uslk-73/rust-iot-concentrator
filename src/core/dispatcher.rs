@@ -58,6 +58,7 @@ pub enum DispatcherError {
 }
 
 pub struct Dispatcher {
+    pub telemetry_tx: Option<tokio::sync::broadcast::Sender<BusMessage>>,
     mode: ModeState,
     bus: Bus,
     hard_tx: mpsc::Sender<BusMessage>,
@@ -74,7 +75,7 @@ pub struct DomainReceivers {
 }
 
 impl Dispatcher {
-    pub fn new(mode: ModeState, bus: Bus, domain_capacity: usize) -> (Self, DomainReceivers) {
+    pub fn new(mode: ModeState, bus: Bus, domain_capacity: usize, telemetry_tx: Option<tokio::sync::broadcast::Sender<BusMessage>>) -> (Self, DomainReceivers) {
         let cap = domain_capacity.max(16);
         let (hard_tx, hard_rx) = mpsc::channel(cap);
         let (soft_tx, soft_rx) = mpsc::channel(cap);
@@ -89,6 +90,7 @@ impl Dispatcher {
                 soft_tx,
                 life_tx,
                 cmd_tx,
+                telemetry_tx,
             },
             DomainReceivers {
                 hard: hard_rx,
@@ -153,6 +155,9 @@ impl Dispatcher {
         loop {
             tokio::select! {
                 Some(msg) = telemetry_rx.recv() => {
+                    if let Some(tx) = &self.telemetry_tx {
+                        let _ = tx.send(msg.clone());
+                    }
                     self.route(msg).await?;
                 }
                 Some(msg) = status_rx.recv() => {
@@ -208,7 +213,7 @@ mod tests {
     fn make() -> (Dispatcher, DomainReceivers, Bus) {
         let (bus, _rx) = Bus::new(16, 16, 16, 16, std::sync::Arc::new(crate::metrics::OverheadMetrics::new()));
         let mode = ModeState::with_mode(Mode::All);
-        let (disp, drecv) = Dispatcher::new(mode, bus.clone(), 16);
+        let (disp, drecv) = Dispatcher::new(mode, bus.clone(), 16, None);
         (disp, drecv, bus)
     }
 

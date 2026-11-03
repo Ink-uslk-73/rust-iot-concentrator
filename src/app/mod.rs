@@ -25,7 +25,8 @@ pub async fn run(cli: Cli) -> anyhow::Result<()> {
             info!("run mode");
 
             let bus_h = bus::init();
-            let disp_h = dispatcher::init(bus_h.bus.clone());
+            let (telemetry_tx, _) = tokio::sync::broadcast::channel(256);
+            let disp_h = dispatcher::init(bus_h.bus.clone(), Some(telemetry_tx.clone()));
             let mut dom_h = domains::init(bus_h.bus.clone());
             let sat_h = satellite::init(bus_h.bus.clone());
 
@@ -67,7 +68,7 @@ pub async fn run(cli: Cli) -> anyhow::Result<()> {
                 bus_h.bus.clone(),
                 cfg.clone(),
                 sat_h.registry.clone(),
-                None, // telemetry_tx (P3.34, часть 2 — публикация позже)
+                Some(telemetry_tx.clone()), // telemetry_tx (P3.34, часть 2 — публикация)
             );
             let api_handle = api::serve(&cli.api_addr, state).await?;
 
