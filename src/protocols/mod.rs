@@ -9,9 +9,6 @@ pub mod soft;
 
 use std::sync::Arc;
 use crate::config::ConcentratorConfig;
-use crate::core::bus::{Bus, BusMessage, BusPayload};
-use crate::core::mode_switch::Priority;
-use crate::metrics::registry::Registry;
 
 pub use common::{ProtocolAdapter, PublishFn, make_publish};
 
