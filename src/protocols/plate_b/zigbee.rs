@@ -1,20 +1,20 @@
 use std::sync::Arc;
-// src/protocols/soft/thread.rs - Thread (OpenThread RCP).
+// src/protocols/soft/zigbee.rs - Zigbee (ziggurat).
 use crate::core::mode_switch::Priority;
-use crate::protocols::{ProtocolAdapter, PublishFn};
+use crate::protocols::common::{ProtocolAdapter, PublishFn};
 
-pub struct ThreadAdapter;
+pub struct ZigbeeAdapter;
 
-impl ThreadAdapter {
+impl ZigbeeAdapter {
     pub fn new() -> Self { Self }
 }
 
-impl Default for ThreadAdapter {
+impl Default for ZigbeeAdapter {
     fn default() -> Self { Self::new() }
 }
 
-impl ProtocolAdapter for ThreadAdapter {
-    fn name(&self) -> &'static str { "thread" }
+impl ProtocolAdapter for ZigbeeAdapter {
+    fn name(&self) -> &'static str { "zigbee" }
     fn priority(&self) -> Priority { Priority::Soft }
     fn start(&self, _publish: PublishFn, _registry: Arc<crate::metrics::registry::Registry>) -> Result<(), String> { Ok(()) }
 }

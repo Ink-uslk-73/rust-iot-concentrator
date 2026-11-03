@@ -1,7 +1,7 @@
 use std::sync::Arc;
 // src/protocols/soft/matter.rs - Matter (controller).
 use crate::core::mode_switch::Priority;
-use crate::protocols::{ProtocolAdapter, PublishFn};
+use crate::protocols::common::{ProtocolAdapter, PublishFn};
 
 pub struct MatterAdapter;
 

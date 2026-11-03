@@ -1,20 +1,20 @@
 use std::sync::Arc;
-// src/protocols/soft/zigbee.rs - Zigbee (ziggurat).
+// src/protocols/soft/ble.rs - BLE (bluetooth-ctl).
 use crate::core::mode_switch::Priority;
-use crate::protocols::{ProtocolAdapter, PublishFn};
+use crate::protocols::common::{ProtocolAdapter, PublishFn};
 
-pub struct ZigbeeAdapter;
+pub struct BleAdapter;
 
-impl ZigbeeAdapter {
+impl BleAdapter {
     pub fn new() -> Self { Self }
 }
 
-impl Default for ZigbeeAdapter {
+impl Default for BleAdapter {
     fn default() -> Self { Self::new() }
 }
 
-impl ProtocolAdapter for ZigbeeAdapter {
-    fn name(&self) -> &'static str { "zigbee" }
+impl ProtocolAdapter for BleAdapter {
+    fn name(&self) -> &'static str { "ble" }
     fn priority(&self) -> Priority { Priority::Soft }
     fn start(&self, _publish: PublishFn, _registry: Arc<crate::metrics::registry::Registry>) -> Result<(), String> { Ok(()) }
 }

@@ -5,7 +5,6 @@ pub mod plate_a;
 pub mod plate_b;
 pub mod plate_c;
 pub mod life;
-pub mod soft;
 
 use std::sync::Arc;
 use crate::config::ConcentratorConfig;
