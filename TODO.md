@@ -244,3 +244,14 @@
 - [ ] Оценить Kata 4.0 (runtime-rs/Dragonball) только если BOT-VM нужна эфемерность/старт <1 с
 - [ ] Оценить rust-vmm только если libvirt не хватает
 - [ ] Не переписывать host (CORE) на Rust сейчас
+
+## P3.42 — Топология сети (IPv6/NAT66/VLAN/SOAP/магистраль)
+
+- [x] docs/system/network-topology.md
+- [x] IPv6 always (ULA fd00::/8), IPv4 — исключение
+- [x] NAT66 (на шлюзе, NET-VM)
+- [x] VLAN 10–90 (тематические подсети, фильтры)
+- [x] NET-VM — пересадочный хаб (шлюз один, MAN Unicast P2P)
+- [x] SOAP — оптика (магистраль, DCI), REST — внутри
+- [x] UTP+QUIC (non-stop) / TCP (остальное)
+- [ ] Открытые: VLAN count (9?), IPv4-исключения (список), трансиверы (ER4/DR8), NTP/discovery
