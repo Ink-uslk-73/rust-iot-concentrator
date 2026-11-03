@@ -245,7 +245,7 @@
 - [ ] Оценить rust-vmm только если libvirt не хватает
 - [ ] Не переписывать host (CORE) на Rust сейчас
 
-## P3.42 — Топология сети (IPv6/NAT66/VLAN/SOAP/магистраль)
+## P3.42 — Топология сети (IPv6/NAT66/VLAN/SOAP/магистраль)   [x]
 
 - [x] docs/system/network-topology.md
 - [x] IPv6 always (ULA fd00::/8), IPv4 — исключение
@@ -254,7 +254,7 @@
 - [x] NET-VM — пересадочный хаб (шлюз один, MAN Unicast P2P)
 - [x] SOAP — оптика (магистраль, DCI), REST — внутри
 - [x] UTP+QUIC (non-stop) / TCP (остальное)
-- [ ] Открытые: VLAN count (9?), IPv4-исключения (список), трансиверы (ER4/DR8), NTP/discovery
+- [x] Решённые: VLAN count (9), IPv4-исключения (IPv6 везде), NTP (chrony), discovery (unicast DNS-SD), трансиверы (ER4)
 
 ## P3.43 — UI: чат ЦУ + Network Engineering
 
