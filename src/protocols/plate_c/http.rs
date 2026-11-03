@@ -1,7 +1,7 @@
 use std::sync::Arc;
 // src/protocols/life/http.rs - HTTP (axum).
 use crate::core::mode_switch::Priority;
-use crate::protocols::{ProtocolAdapter, PublishFn};
+use crate::protocols::common::{ProtocolAdapter, PublishFn};
 
 pub struct HttpAdapter;
 

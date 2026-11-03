@@ -1,7 +1,7 @@
 use std::sync::Arc;
 // src/protocols/life/mqtt.rs - MQTT (mqtt5 broker).
 use crate::core::mode_switch::Priority;
-use crate::protocols::{ProtocolAdapter, PublishFn};
+use crate::protocols::common::{ProtocolAdapter, PublishFn};
 
 pub struct MqttAdapter;
 
