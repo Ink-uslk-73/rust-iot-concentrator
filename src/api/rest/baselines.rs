@@ -5,7 +5,7 @@ use serde::Deserialize;
 use std::time::Instant;
 
 use crate::storage::baselines::{self, Baseline, BaselineSummary};
-use super::SharedState;
+use crate::api::SharedState;
 
 pub async fn get_latest(
     State(s): State<SharedState>,

@@ -1,14 +1,7 @@
 //! src/api/mod.rs - REST + SSE for tablet and SOC.
 
-pub mod baselines;
 pub mod rest;
-pub mod config;
-pub mod events;
-pub mod metrics;
-pub mod mode;
-pub mod self_metrics;
-pub mod satellites;
-pub mod telemetry;
+pub use rest::*;
 
 use axum::{routing::{get, post}, Router};
 use sqlx::PgPool;

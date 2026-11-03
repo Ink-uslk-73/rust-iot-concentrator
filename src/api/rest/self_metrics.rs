@@ -2,7 +2,7 @@
 
 use axum::{extract::State, Json};
 
-use super::SharedState;
+use crate::api::SharedState;
 
 pub async fn self_metrics(
     State(s): State<SharedState>,

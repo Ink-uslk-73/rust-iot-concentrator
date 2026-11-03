@@ -7,7 +7,7 @@ use serde::Deserialize;
 use std::convert::Infallible;
 use std::time::Duration;
 
-use super::SharedState;
+use crate::api::SharedState;
 use crate::storage::telemetry as db;
 
 #[derive(Debug, Deserialize, Default)]

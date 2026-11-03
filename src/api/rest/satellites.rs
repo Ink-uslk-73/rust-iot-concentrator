@@ -2,7 +2,7 @@
 
 use axum::{extract::State, Json};
 use std::time::Duration;
-use super::SharedState;
+use crate::api::SharedState;
 
 pub async fn list(State(s): State<SharedState>) -> Json<Vec<crate::satellite::SatelliteStatus>> {
     Json(s.satellites.check(Duration::from_secs(10), 3))

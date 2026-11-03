@@ -271,3 +271,8 @@
 
 - [x] docs/system/satellite-vm.md (5 VM: DB, NET, BACKUP, BOT, AUDIT)
 - [ ] AUDIT-VM: read-only доступ к CORE (rsync/API)
+
+## P3.46 — Флаки-тест hard_pool::tests::periodic_registers_and_runs
+
+- [ ] Флаки в полном прогоне (изолированно — ok); тайминг/асинхронность
+- [ ] Разобрать: tokio::time::sleep vs interval, race condition

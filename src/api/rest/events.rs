@@ -8,7 +8,7 @@ use std::convert::Infallible;
 use std::time::{Duration, Instant};
 
 use crate::storage::events::{self, Event, EventFilter};
-use super::SharedState;
+use crate::api::SharedState;
 
 #[derive(Debug, Deserialize, Default)]
 pub struct ListQuery {

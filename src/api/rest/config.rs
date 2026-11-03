@@ -3,7 +3,7 @@
 use axum::{extract::State, http::StatusCode, Json};
 use serde::{Deserialize, Serialize};
 
-use super::SharedState;
+use crate::api::SharedState;
 
 #[derive(Debug, Serialize)]
 pub struct ConfigModeResponse {

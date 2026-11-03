@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::core::mode_switch::{Mode, Priority};
 use crate::core::bus::{BusMessage, BusPayload};
-use super::SharedState;
+use crate::api::SharedState;
 
 #[derive(Debug, Serialize)]
 pub struct ModeResponse {
