@@ -255,3 +255,19 @@
 - [x] SOAP — оптика (магистраль, DCI), REST — внутри
 - [x] UTP+QUIC (non-stop) / TCP (остальное)
 - [ ] Открытые: VLAN count (9?), IPv4-исключения (список), трансиверы (ER4/DR8), NTP/discovery
+
+## P3.43 — UI: чат ЦУ + Network Engineering
+
+- [x] docs/system/ui-chat.md (вкладки Engineering/Audit, LLM AUDIT-VM, RBAC)
+- [x] docs/system/ui-engineering.md (жизненный цикл, read-write)
+- [ ] RBAC (инженер, аудитор, дежурный) — код
+
+## P3.44 — UI: Network Audit
+
+- [x] docs/system/ui-audit.md (EXAMINE/INTERVIEW/TEST, SOX/ISO 27001)
+- [ ] AUDIT-VM (read-only к CORE, LLM локальный)
+
+## P3.45 — AUDIT-VM (5-я VM)
+
+- [x] docs/system/satellite-vm.md (5 VM: DB, NET, BACKUP, BOT, AUDIT)
+- [ ] AUDIT-VM: read-only доступ к CORE (rsync/API)

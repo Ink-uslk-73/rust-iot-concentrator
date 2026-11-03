@@ -15,9 +15,10 @@
 | **NET-VM** | NetworkNode (Router/Switch/Bridge/Gateway/Firewall), VLAN | VM |
 | **BACKUP-VM** | Фоновый бэкап (снапшоты ≤32, ротация) | VM |
 | **BOT-VM** | Automation runner: Lua + Python, FSM, диспетчер, планировщик, watchdog (внешний), багтрек (SQLite) | VM |
+| **AUDIT-VM** | Аудит (read-only к CORE), LLM (локальный), отчёты | VM |
 | **PLATE-A/B/C** | Адаптеры (поле, умный дом, каналы) | CORE (не VM) |
 
-Итого: 4 VM + host. PLATE-A/B/C — адаптеры, не VM (Оккам: не 7 VM).
+Итого: 5 VM (DB, NET, BACKUP, BOT, AUDIT) + host. PLATE-A/B/C — адаптеры, не VM (Оккам: не 7 VM).
 
 ## Диски (NVMe vs SATA)
 
