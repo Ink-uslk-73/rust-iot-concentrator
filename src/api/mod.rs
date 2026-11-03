@@ -1,6 +1,7 @@
 //! src/api/mod.rs - REST + SSE for tablet and SOC.
 
 pub mod baselines;
+pub mod rest;
 pub mod config;
 pub mod events;
 pub mod metrics;
