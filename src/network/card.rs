@@ -21,22 +21,31 @@ pub struct LinkStats {
     pub tx_drops: u64,
 }
 
-#[derive(Debug, Clone)]
-pub enum LinkEvent {
-    Up { name: String },
-    Down { name: String },
-    New { name: String },
-    Removed { name: String },
-}
-
 pub trait NetworkCard: Send + Sync + Debug {
-    fn name(&self) -> &str;
-    fn mac(&self) -> Option<[u8; 6]>;
-    fn state(&self) -> LinkState;
+    /// MAC-адрес (например, "aa:bb:cc:dd:ee:ff").
+    fn mac_address(&self) -> &str;
+    /// Скорость (Мбит/с), 0 если неизвестна.
+    fn speed_mbps(&self) -> u32;
+    /// Интерфейс поднят (operational state).
+    fn is_up(&self) -> bool;
+    /// MTU (обычно 1500).
+    fn mtu(&self) -> u16;
+    /// Состояние (Up/Down/Unknown).
+    fn state(&self) -> LinkState {
+        if self.is_up() { LinkState::Up } else { LinkState::Down }
+    }
+    /// Поднять интерфейс.
     fn up(&self) -> Result<(), String>;
+    /// Опустить интерфейс.
     fn down(&self) -> Result<(), String>;
-    fn set_mtu(&self, mtu: u32) -> Result<(), String>;
+    /// Установить MTU.
+    fn set_mtu(&self, mtu: u16) -> Result<(), String>;
+    /// Статистика (rx/tx bytes/packets/errors/drops).
     fn stats(&self) -> Result<LinkStats, String>;
+    /// Описание (default: "NIC <mac> @ <speed> Мбит/с").
+    fn description(&self) -> String {
+        format!("NIC {} @ {} Мбит/с", self.mac_address(), self.speed_mbps())
+    }
 }
 
 pub fn create_all() -> Vec<Box<dyn NetworkCard>> {
