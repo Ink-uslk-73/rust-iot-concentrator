@@ -27,6 +27,9 @@ pub async fn run(cli: Cli) -> anyhow::Result<()> {
             let bus_h = bus::init();
             let (telemetry_tx, _) = tokio::sync::broadcast::channel(256);
             let (chat_tx, _) = tokio::sync::broadcast::channel(256);
+            let mut automation = crate::automation::AutomationRunner::new(Some(chat_tx.clone())).await.map_err(|e| anyhow::anyhow!("automation: {}", e))?;
+            let _ = automation.add_daily_report("0 0 3 * * *").await;
+            let _ = automation.start().await;
             let disp_h = dispatcher::init(bus_h.bus.clone(), Some(telemetry_tx.clone()));
             let mut dom_h = domains::init(bus_h.bus.clone());
             let sat_h = satellite::init(bus_h.bus.clone());
@@ -82,6 +85,7 @@ pub async fn run(cli: Cli) -> anyhow::Result<()> {
 
             api_handle.abort();
             sup_handle.abort();
+            automation.shutdown().await;
             info!("shutdown complete");
             Ok(())
         }

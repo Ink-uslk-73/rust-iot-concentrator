@@ -1,6 +1,7 @@
 pub mod cache_tasks;
 pub mod aig;
 pub mod api;
+pub mod automation;
 pub mod bot;
 pub mod core;
 pub mod gateway;
