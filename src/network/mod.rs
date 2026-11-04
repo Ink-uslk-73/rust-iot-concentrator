@@ -6,6 +6,7 @@ use std::sync::Arc;
 use crate::metrics::registry::Registry;
 
 pub mod bridge;
+pub mod card;
 pub mod firewall;
 pub mod gateway;
 pub mod router;
