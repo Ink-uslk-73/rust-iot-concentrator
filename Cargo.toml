@@ -71,3 +71,6 @@ debug = "line-tables-only"
 [[bin]]
 name = "frontier"
 path = "src/main.rs"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+nlink = "0.25"
