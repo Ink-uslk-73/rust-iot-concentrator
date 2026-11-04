@@ -74,4 +74,5 @@ path = "src/main.rs"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 nlink = "0.25"
+runact = "1.3"
 rfmon = "0.1"
