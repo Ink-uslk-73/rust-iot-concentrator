@@ -1,9 +1,10 @@
 //! src/api/mod.rs - REST + SSE for tablet and SOC.
 
 pub mod rest;
+pub mod rbac;
 pub use rest::*;
 
-use axum::{routing::{get, post}, Router};
+use axum::{routing::{get, post}, Router, middleware};
 use sqlx::PgPool;
 use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
@@ -41,23 +42,28 @@ pub fn router(state: SharedState) -> Router {
         "name": "frontier",
     }))
 }
-Router::new()
-        .route("/api/v1/health", axum::routing::get(health))
-        .route("/api/v1/devices/:device_id/baseline",          get(baselines::get_latest))
-        .route("/api/v1/devices/:device_id/baseline/summary",  get(baselines::get_summary))
-        .route("/api/v1/devices/:device_id/baseline/diff",     get(baselines::get_diff))
-        .route("/api/v1/devices/:device_id/baseline/capture",  post(baselines::post_capture))
-        .route("/api/v1/devices/:device_id/baseline/history",  get(baselines::get_history))
-        .route("/api/v1/events",                                get(events::list))
-        .route("/api/v1/events/stream",                         get(events::stream))
-        .route("/api/v1/events/:event_id",                      get(events::get_one))
-        .route("/api/v1/events/ack",                            post(events::ack))
-        .route("/api/v1/metrics/overhead",                      get(metrics::overhead))
-        .route("/api/v1/metrics/self",                          get(self_metrics::self_metrics))
-        .route("/api/v1/mode",                                  get(mode::get_mode).post(mode::set_mode))
-        .route("/api/v1/config/mode",                           get(config::get_config_mode).post(config::set_config_mode))
-        .route("/api/v1/telemetry/latest/:sensor_id",           get(telemetry::latest))
-        .route("/api/v1/satellites",                            get(satellites::list))
-        .fallback(ui::serve)
-        .with_state(state)
+    let read = Router::new()
+        .route("/api/v1/health", get(health))
+        .route("/api/v1/devices/:device_id/baseline", get(baselines::get_latest))
+        .route("/api/v1/devices/:device_id/baseline/summary", get(baselines::get_summary))
+        .route("/api/v1/devices/:device_id/baseline/diff", get(baselines::get_diff))
+        .route("/api/v1/devices/:device_id/baseline/history", get(baselines::get_history))
+        .route("/api/v1/events", get(events::list))
+        .route("/api/v1/events/stream", get(events::stream))
+        .route("/api/v1/events/:event_id", get(events::get_one))
+        .route("/api/v1/metrics/overhead", get(metrics::overhead))
+        .route("/api/v1/metrics/self", get(self_metrics::self_metrics))
+        .route("/api/v1/mode", get(mode::get_mode))
+        .route("/api/v1/config/mode", get(config::get_config_mode))
+        .route("/api/v1/telemetry/latest/:sensor_id", get(telemetry::latest))
+        .route("/api/v1/satellites", get(satellites::list));
+
+    let write = Router::new()
+        .route("/api/v1/devices/:device_id/baseline/capture", post(baselines::post_capture))
+        .route("/api/v1/events/ack", post(events::ack))
+        .route("/api/v1/mode", post(mode::set_mode))
+        .route("/api/v1/config/mode", post(config::set_config_mode))
+        .layer(middleware::from_fn(rbac::require_role));
+
+    read.merge(write).fallback(ui::serve).with_state(state)
 }
