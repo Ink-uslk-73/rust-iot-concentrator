@@ -42,3 +42,9 @@
 - [ ] rfmon: автор/репозиторий — уточнить.
 - [ ] simple_wifi: нужен ли (802.11 разбор)?
 - [ ] Npcap OEM: нужна ли лицензия для распространения?
+## Проверки (CI)
+
+| Компонент | Назначение | Автор / Организация | Активная ссылка |
+|---|---|---|---|
+| **cargo-careful** | Nightly-проверка `unsafe`/FFI (выравнивание, bounds, UB) | Ralf Jung / rust-lang | https://github.com/rust-lang/cargo-careful |
+| **cargo clippy** | Линтер (pedantic/nursery — позже) | rust-lang | https://github.com/rust-lang/rust-clippy |

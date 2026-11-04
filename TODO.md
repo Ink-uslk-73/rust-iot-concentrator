@@ -272,10 +272,10 @@
 - [x] docs/system/satellite-vm.md (5 VM: DB, NET, BACKUP, BOT, AUDIT)
 - [ ] AUDIT-VM: read-only доступ к CORE (rsync/API)
 
-## P3.46 — Проверка unsafe (cargo-careful, не Miri)
+## P3.46 — Проверка unsafe (cargo-careful, не Miri)   [x]
 
-- [ ] cargo-careful в ночном CI (FFI, выравнивание, bounds)
-- [ ] cargo miri — только для чистого Rust (raw/store_forward), не для numa.rs
+- [x] cargo-careful в ночном CI (FFI, выравнивание, bounds)
+- [x] cargo miri — только для чистого Rust (raw/store_forward), не для numa.rs (P3.46b)
 - [ ] perf c2c / numactl — ручная NUMA-диагностика (EPYC, позже)
 
 ## P3.46a — Флаки-тест hard_pool::tests::periodic_registers_and_runs
