@@ -231,18 +231,16 @@ mod tests {
         assert!(s.submitted >= 2);
         p.stop();
     }
-
     #[test]
     fn periodic_registers_and_runs() {
         let p = make_pool(2, 32);
-        let count = Arc::new(AtomicUsize::new(0));
-        let c = Arc::clone(&count);
+        let (tx, rx) = std::sync::mpsc::channel();
         p.submit_periodic(Duration::from_millis(10), move || {
-            c.fetch_add(1, Ordering::SeqCst);
+            let _ = tx.send(());
         })
         .unwrap();
-        std::thread::sleep(Duration::from_millis(80));
+        assert!(rx.recv_timeout(Duration::from_secs(2)).is_ok());
+        assert!(rx.recv_timeout(Duration::from_secs(2)).is_ok());
         p.stop();
-        assert!(count.load(Ordering::SeqCst) >= 2);
     }
 }
