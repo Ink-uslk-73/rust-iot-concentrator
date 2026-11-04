@@ -29,6 +29,10 @@ pub async fn run(cli: Cli) -> anyhow::Result<()> {
             let (chat_tx, _) = tokio::sync::broadcast::channel(256);
             let mut automation = crate::automation::AutomationRunner::new(Some(chat_tx.clone())).await.map_err(|e| anyhow::anyhow!("automation: {}", e))?;
             let _ = automation.add_daily_report("0 0 3 * * *").await;
+            let _ = automation.add_session_task("0 0 8 * * *").await;
+            let _ = automation.add_report_task("0 0 3 * * *").await;
+            let _ = automation.add_archive_task("0 0 4 * * *").await;
+            let _ = automation.add_logs_task("0 0 5 * * *").await;
             let _ = automation.start().await;
             let disp_h = dispatcher::init(bus_h.bus.clone(), Some(telemetry_tx.clone()));
             let mut dom_h = domains::init(bus_h.bus.clone());

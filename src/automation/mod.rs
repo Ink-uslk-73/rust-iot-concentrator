@@ -80,6 +80,54 @@ impl AutomationRunner {
         Ok(())
     }
 
+
+    pub async fn add_session_task(&mut self, cron: &str) -> Result<(), String> {
+        let tx = self.chat_tx.clone();
+        let job = Job::new_async(cron, move |_uuid, _l| {
+            let tx = tx.clone();
+            Box::pin(async move {
+                tasks::session::open_session(&tx);
+            })
+        }).map_err(|e| e.to_string())?;
+        self.sched.add(job).await.map_err(|e| e.to_string())?;
+        Ok(())
+    }
+
+    pub async fn add_report_task(&mut self, cron: &str) -> Result<(), String> {
+        let tx = self.chat_tx.clone();
+        let job = Job::new_async(cron, move |_uuid, _l| {
+            let tx = tx.clone();
+            Box::pin(async move {
+                tasks::report::publish_report(&tx);
+            })
+        }).map_err(|e| e.to_string())?;
+        self.sched.add(job).await.map_err(|e| e.to_string())?;
+        Ok(())
+    }
+
+    pub async fn add_archive_task(&mut self, cron: &str) -> Result<(), String> {
+        let tx = self.chat_tx.clone();
+        let job = Job::new_async(cron, move |_uuid, _l| {
+            let tx = tx.clone();
+            Box::pin(async move {
+                tasks::archive::publish_archive(&tx);
+            })
+        }).map_err(|e| e.to_string())?;
+        self.sched.add(job).await.map_err(|e| e.to_string())?;
+        Ok(())
+    }
+
+    pub async fn add_logs_task(&mut self, cron: &str) -> Result<(), String> {
+        let tx = self.chat_tx.clone();
+        let job = Job::new_async(cron, move |_uuid, _l| {
+            let tx = tx.clone();
+            Box::pin(async move {
+                tasks::logs::publish_logs(&tx);
+            })
+        }).map_err(|e| e.to_string())?;
+        self.sched.add(job).await.map_err(|e| e.to_string())?;
+        Ok(())
+    }
     pub async fn start(&self) -> Result<(), String> {
         self.sched.start().await.map_err(|e| e.to_string())?;
         self.set_state(AutomationState::Running);
