@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Frontier — Чат ЦУ</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 1rem; background: #f5f5f5; }
+    header { display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; }
+    .tabs button { padding: 0.5rem 1rem; border: 1px solid #ccc; background: #fff; cursor: pointer; }
+    .tabs button.active { background: #007bff; color: #fff; }
+    #log { background: #fff; border: 1px solid #ccc; height: 60vh; overflow-y: auto; padding: 0.5rem; margin-bottom: 1rem; }
+    .msg { margin: 0.25rem 0; padding: 0.25rem 0.5rem; border-radius: 4px; }
+    .msg.engineering { background: #e3f2fd; }
+    .msg.audit { background: #fff3e0; }
+    .msg .meta { font-size: 0.75rem; color: #666; }
+    #compose { display: flex; gap: 0.5rem; }
+    #text { flex: 1; padding: 0.5rem; }
+    #role { padding: 0.5rem; }
+    button.send { padding: 0.5rem 1rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h2>Чат ЦУ</h2>
+    <label>Роль:
+      <select id="role">
+        <option value="engineer">engineer</option>
+        <option value="onduty">onduty</option>
+        <option value="auditor">auditor</option>
+        <option value="llm">llm</option>
+      </select>
+    </label>
+    <div class="tabs">
+      <button data-tab="engineering" class="active">Engineering</button>
+      <button data-tab="audit">Audit</button>
+    </div>
+  </header>
+
+  <div id="log"></div>
+
+  <div id="compose">
+    <input id="text" placeholder="Сообщение..." />
+    <button class="send" onclick="send()">Отправить</button>
+  </div>
+
+  <script>
+    let tab = "engineering";
+    const log = document.getElementById("log");
+    const roleSel = document.getElementById("role");
+
+    document.querySelectorAll(".tabs button").forEach(b => {
+      b.addEventListener("click", () => {
+        document.querySelectorAll(".tabs button").forEach(x => x.classList.remove("active"));
+        b.classList.add("active");
+        tab = b.dataset.tab;
+        renderLog();
+      });
+    });
+
+    const messages = [];
+    function renderLog() {
+      log.innerHTML = "";
+      messages.filter(m => m.tab === tab).forEach(m => {
+        const div = document.createElement("div");
+        div.className = "msg " + m.tab;
+        div.innerHTML = `<div>${escapeHtml(m.text)}</div><div class="meta">${escapeHtml(m.role)} · ${new Date(m.ts).toLocaleString("ru-RU")}</div>`;
+        log.appendChild(div);
+      });
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/[&<>"\\x27]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\\"":"&quot;","\\x27":"&#39;"}[c]));
+    }
+
+    async function send() {
+      const text = document.getElementById("text").value.trim();
+      if (!text) return;
+      document.getElementById("text").value = "";
+      const resp = await fetch("/api/v1/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Role": roleSel.value },
+        body: JSON.stringify({ text, tab })
+      });
+      if (!resp.ok) { alert("Ошибка: " + resp.status); }
+    }
+
+    const es = new EventSource("/api/v1/chat/stream");
+    es.addEventListener("chat", ev => {
+      try { const m = JSON.parse(ev.data); messages.push(m); renderLog(); } catch (e) {}
+    });
+    es.onerror = () => { /* EventSource авто-reconnect */ };
+  </script>
+</body>
+</html>
