@@ -282,3 +282,14 @@
 
 - [ ] Флаки в полном прогоне (изолированно — ok); тайминг/асинхронность
 - [ ] Разобрать: tokio::time::sleep vs interval, race condition
+
+## P3.48 — runact (CardActor, Linux-only)   [x]
+
+- [x] CardActor (runact 1.3, Actor, ActorRef); cfg(target_os = linux); Windows — без акторов
+- [ ] ractor (Tokio, cross-platform) — альтернатива, позже
+
+## P3.49 — Деплой, канарейки, сторож версий (позже)
+
+- [ ] Механизм развёртывания (deploy, update, upgrade, откат)
+- [ ] Верификация: нечётные версии — сырые канарейки, чётные — стабильные
+- [ ] Сторож версий (проверка раз в сутки)

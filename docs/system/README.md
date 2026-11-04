@@ -27,6 +27,7 @@
 
 - [domain-priority.md](domain-priority.md) — HARD/SOFT/LIFE
 - [router-gateway.md](router-gateway.md) — роутер/шлюз, relay/smart host
+- [network-card.md](network-card.md) — NetworkCard (netdev/nlink/pcap/rfmon/runact)
 - [network-nodes.md](network-nodes.md) — паттерн NetworkNode (router, switch, bridge, gateway, firewall)
 - [network-topology.md](network-topology.md) — топология (IPv6/NAT66/VLAN/SOAP/магистраль)
 - [numa-tokio.md](numa-tokio.md) — NUMA + tokio
