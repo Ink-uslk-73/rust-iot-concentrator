@@ -2,6 +2,7 @@
 
 pub mod rest;
 pub mod rbac;
+pub mod chat;
 pub use rest::*;
 
 use axum::{routing::{get, post}, Router, middleware};
@@ -30,6 +31,7 @@ pub struct AppState {
     pub config: Arc<RwLock<ConcentratorConfig>>,
     pub satellites: Arc<SatelliteRegistry>,
     pub telemetry_tx: Option<tokio::sync::broadcast::Sender<crate::core::bus::BusMessage>>,
+    pub chat_tx: Option<tokio::sync::broadcast::Sender<chat::ChatMsg>>,
 }
 
 pub type SharedState = Arc<AppState>;
@@ -56,13 +58,15 @@ pub fn router(state: SharedState) -> Router {
         .route("/api/v1/mode", get(mode::get_mode))
         .route("/api/v1/config/mode", get(config::get_config_mode))
         .route("/api/v1/telemetry/latest/:sensor_id", get(telemetry::latest))
-        .route("/api/v1/satellites", get(satellites::list));
+        .route("/api/v1/satellites", get(satellites::list))
+        .route("/api/v1/chat/stream", get(chat::stream_chat));
 
     let write = Router::new()
         .route("/api/v1/devices/:device_id/baseline/capture", post(baselines::post_capture))
         .route("/api/v1/events/ack", post(events::ack))
         .route("/api/v1/mode", post(mode::set_mode))
         .route("/api/v1/config/mode", post(config::set_config_mode))
+        .route("/api/v1/chat", post(chat::post_chat))
         .layer(middleware::from_fn(rbac::require_role));
 
     read.merge(write).fallback(ui::serve).with_state(state)
