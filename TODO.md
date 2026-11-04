@@ -272,7 +272,13 @@
 - [x] docs/system/satellite-vm.md (5 VM: DB, NET, BACKUP, BOT, AUDIT)
 - [ ] AUDIT-VM: read-only доступ к CORE (rsync/API)
 
-## P3.46 — Флаки-тест hard_pool::tests::periodic_registers_and_runs
+## P3.46 — Проверка unsafe (cargo-careful, не Miri)
+
+- [ ] cargo-careful в ночном CI (FFI, выравнивание, bounds)
+- [ ] cargo miri — только для чистого Rust (raw/store_forward), не для numa.rs
+- [ ] perf c2c / numactl — ручная NUMA-диагностика (EPYC, позже)
+
+## P3.46a — Флаки-тест hard_pool::tests::periodic_registers_and_runs
 
 - [ ] Флаки в полном прогоне (изолированно — ok); тайминг/асинхронность
 - [ ] Разобрать: tokio::time::sleep vs interval, race condition
