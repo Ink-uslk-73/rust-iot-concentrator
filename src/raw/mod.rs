@@ -3,4 +3,6 @@
 pub mod source;
 pub mod pcap_source;
 pub mod file_source;
+#[cfg(target_os = "linux")]
+pub mod wifi_source;
 
