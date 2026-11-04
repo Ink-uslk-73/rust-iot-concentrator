@@ -39,3 +39,31 @@ pub async fn require_role(req: Request, next: Next) -> Result<Response, StatusCo
     req.extensions_mut().insert(role);
     Ok(next.run(req).await)
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn from_header_known() {
+        assert_eq!(Role::from_header("engineer"), Some(Role::Engineer));
+        assert_eq!(Role::from_header("Engineer"), Some(Role::Engineer));
+        assert_eq!(Role::from_header("auditor"), Some(Role::Auditor));
+        assert_eq!(Role::from_header("onduty"), Some(Role::OnDuty));
+        assert_eq!(Role::from_header("llm"), Some(Role::Llm));
+    }
+
+    #[test]
+    fn from_header_unknown() {
+        assert_eq!(Role::from_header(""), None);
+        assert_eq!(Role::from_header("admin"), None);
+        assert_eq!(Role::from_header("root"), None);
+    }
+
+    #[test]
+    fn can_write_matrix() {
+        assert!(Role::Engineer.can_write());
+        assert!(Role::OnDuty.can_write());
+        assert!(!Role::Auditor.can_write());
+        assert!(!Role::Llm.can_write());
+    }
+}
