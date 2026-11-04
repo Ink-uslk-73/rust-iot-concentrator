@@ -10,6 +10,8 @@ pub mod card;
 #[cfg(target_os = "linux")]
 pub mod card_actor;
 pub mod netdev_card;
+#[cfg(target_os = "windows")]
+pub mod windows_card;
 #[cfg(target_os = "linux")]
 pub mod linux_card;
 pub mod firewall;
