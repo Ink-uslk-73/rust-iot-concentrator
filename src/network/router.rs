@@ -10,6 +10,12 @@ impl RouterNode {
     pub fn new() -> Self { Self }
 }
 
+impl Default for RouterNode {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl NetworkNode for RouterNode {
     fn name(&self) -> &'static str { "router" }
     fn kind(&self) -> NodeKind { NodeKind::RouterReal }

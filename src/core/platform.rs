@@ -8,7 +8,7 @@ impl Platform {
         #[cfg(target_os = "linux")]
         { return Platform::Linux; }
         #[cfg(windows)]
-        { return Platform::Windows; }
+        { Platform::Windows}
         #[cfg(not(any(target_os = "linux", windows)))]
         { Platform::Other }
     }

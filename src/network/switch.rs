@@ -10,6 +10,12 @@ impl SwitchNode {
     pub fn new() -> Self { Self }
 }
 
+impl Default for SwitchNode {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl NetworkNode for SwitchNode {
     fn name(&self) -> &'static str { "switch" }
     fn kind(&self) -> NodeKind { NodeKind::Switch }

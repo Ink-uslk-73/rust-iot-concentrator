@@ -14,7 +14,7 @@ impl VsockTransport {
     pub fn new(_cid: u32, _port: u32) -> Result<Self, String> {
         #[cfg(not(target_os = "linux"))]
         {
-            return Err("vsock not supported on this OS".into());
+            Err("vsock not supported on this OS".into())
         }
         #[cfg(target_os = "linux")]
         {
@@ -27,7 +27,7 @@ impl Transport for VsockTransport {
     fn send(&self, _msg: TransportMessage) -> Result<(), String> {
         #[cfg(not(target_os = "linux"))]
         {
-            return Err("vsock not supported on this OS".into());
+            Err("vsock not supported on this OS".into())
         }
         #[cfg(target_os = "linux")]
         {

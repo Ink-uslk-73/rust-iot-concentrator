@@ -36,6 +36,7 @@ impl RawStore {
         let file = std::fs::File::open(&self.path).map_err(|e| e.to_string())?;
         let mut out = Vec::new();
         let mut rd = std::io::BufReader::new(file);
+        #[allow(clippy::while_let_loop)]
         loop {
             match ciborium::from_reader::<RawPoint, _>(&mut rd) {
                 Ok(p) => out.push(p),

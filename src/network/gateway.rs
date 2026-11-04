@@ -10,6 +10,12 @@ impl GatewayNode {
     pub fn new() -> Self { Self }
 }
 
+impl Default for GatewayNode {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl NetworkNode for GatewayNode {
     fn name(&self) -> &'static str { "gateway" }
     fn kind(&self) -> NodeKind { NodeKind::Gateway }

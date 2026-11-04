@@ -4,15 +4,11 @@ use crate::core::dispatcher::DomainKind;
 use crate::core::mode_switch::Priority;
 use crate::vm::Domain;
 
+#[derive(Default)]
 pub struct HardDomain {
     pub processed: u64,
 }
 
-impl Default for HardDomain {
-    fn default() -> Self {
-        Self { processed: 0 }
-    }
-}
 
 impl Domain for HardDomain {
     fn kind(&self) -> DomainKind { DomainKind::Hard }

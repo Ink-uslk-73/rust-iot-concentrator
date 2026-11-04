@@ -4,15 +4,11 @@ use crate::core::dispatcher::DomainKind;
 use crate::core::mode_switch::Priority;
 use crate::vm::Domain;
 
+#[derive(Default)]
 pub struct LifeDomain {
     pub processed: u64,
 }
 
-impl Default for LifeDomain {
-    fn default() -> Self {
-        Self { processed: 0 }
-    }
-}
 
 impl Domain for LifeDomain {
     fn kind(&self) -> DomainKind { DomainKind::Life }

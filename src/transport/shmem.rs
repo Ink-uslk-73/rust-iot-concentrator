@@ -13,7 +13,7 @@ impl ShmemTransport {
     pub fn new(_path: impl Into<String>) -> Result<Self, String> {
         #[cfg(not(target_os = "linux"))]
         {
-            return Err("shmem not supported on this OS".into());
+            Err("shmem not supported on this OS".into())
         }
         #[cfg(target_os = "linux")]
         {
@@ -26,7 +26,7 @@ impl Transport for ShmemTransport {
     fn send(&self, _msg: TransportMessage) -> Result<(), String> {
         #[cfg(not(target_os = "linux"))]
         {
-            return Err("shmem not supported on this OS".into());
+            Err("shmem not supported on this OS".into())
         }
         #[cfg(target_os = "linux")]
         {

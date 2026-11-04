@@ -34,6 +34,7 @@ pub enum TransportKind {
 }
 
 impl TransportKind {
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(s: &str) -> Self {
         match s {
             "shmem" => TransportKind::Shmem,

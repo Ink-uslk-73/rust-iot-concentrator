@@ -10,6 +10,12 @@ impl BridgeNode {
     pub fn new() -> Self { Self }
 }
 
+impl Default for BridgeNode {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl NetworkNode for BridgeNode {
     fn name(&self) -> &'static str { "bridge" }
     fn kind(&self) -> NodeKind { NodeKind::Bridge }

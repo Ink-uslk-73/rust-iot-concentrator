@@ -4,15 +4,11 @@ use crate::core::dispatcher::DomainKind;
 use crate::core::mode_switch::Priority;
 use crate::vm::Domain;
 
+#[derive(Default)]
 pub struct StorageDomain {
     pub written: u64,
 }
 
-impl Default for StorageDomain {
-    fn default() -> Self {
-        Self { written: 0 }
-    }
-}
 
 impl Domain for StorageDomain {
     fn kind(&self) -> DomainKind {

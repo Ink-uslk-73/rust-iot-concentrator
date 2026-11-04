@@ -10,6 +10,7 @@ impl SatelliteId {
         match self { Self::A => "A", Self::B => "B", Self::C => "C" }
     }
 
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(s: &str) -> Option<Self> {
         match s { "A" => Some(Self::A), "B" => Some(Self::B), "C" => Some(Self::C), _ => None }
     }

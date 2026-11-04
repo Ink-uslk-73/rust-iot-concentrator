@@ -10,6 +10,12 @@ impl FirewallNode {
     pub fn new() -> Self { Self }
 }
 
+impl Default for FirewallNode {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl NetworkNode for FirewallNode {
     fn name(&self) -> &'static str { "firewall" }
     fn kind(&self) -> NodeKind { NodeKind::Firewall }
