@@ -1,12 +1,13 @@
 //! src/api/chat.rs - Chat (POST + SSE, P3.43).
 
-use axum::{extract::State, http::StatusCode, Json, response::sse::{Event as SseEvent, Sse}};
+use axum::{extract::{State, Extension}, http::StatusCode, Json, response::sse::{Event as SseEvent, Sse}};
 use tokio_stream::StreamExt;
 use serde::{Deserialize, Serialize};
 use std::convert::Infallible;
 use std::time::Duration;
 
 use super::SharedState;
+use super::rbac::Role;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatMsg {
@@ -27,6 +28,7 @@ fn default_tab() -> String { "engineering".into() }
 
 pub async fn post_chat(
     State(s): State<SharedState>,
+    Extension(role): Extension<Role>,
     Json(body): Json<PostChat>,
 ) -> Result<Json<ChatMsg>, StatusCode> {
     let Some(tx) = &s.chat_tx else { return Err(StatusCode::SERVICE_UNAVAILABLE); };
@@ -34,7 +36,7 @@ pub async fn post_chat(
         .duration_since(std::time::UNIX_EPOCH)
         .map(|d| d.as_millis() as u64)
         .unwrap_or(0);
-    let msg = ChatMsg { text: body.text, tab: body.tab, role: "engineer".into(), ts: now };
+    let msg = ChatMsg { text: body.text, tab: body.tab, role: format!("{:?}", role), ts: now };
     let _ = tx.send(msg.clone());
     Ok(Json(msg))
 }
