@@ -9,6 +9,7 @@ pub mod metrics;
 pub mod monitoring;
 pub mod numa;
 pub mod network;
+pub mod raw;
 pub mod protocols;
 pub mod storage;
 pub mod terminal;
