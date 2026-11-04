@@ -38,6 +38,7 @@ tokio-rustls = "0.26"
 portable-pty = "0.8"
 russh = "0.48"
 crossbeam = "0.8"
+netdev = "0.47"
 parking_lot = "0.12"
 aya = { version = "0.12", optional = true }
 rust-embed = { version = "8.5", features = ["interpolate-folder-path"] }
