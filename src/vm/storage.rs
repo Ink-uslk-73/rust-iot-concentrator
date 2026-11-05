@@ -1,4 +1,4 @@
-﻿//! src/vm/storage.rs - STORAGE domain (24 HDD, node1).
+//! src/vm/storage.rs - STORAGE domain (24 HDD, node1).
 use crate::core::bus::BusMessage;
 use crate::core::dispatcher::DomainKind;
 use crate::core::mode_switch::Priority;
@@ -33,8 +33,7 @@ mod tests {
 
     #[test]
     fn snapshot_roundtrip() {
-        let mut d = StorageDomain::default();
-        d.written = 123;
+        let mut d = StorageDomain { written: 123 };
         let s = d.snapshot();
         d.written = 0;
         d.restore(&s);

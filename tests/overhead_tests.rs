@@ -18,5 +18,4 @@ fn overhead_module_works() {
 #[ignore]
 fn baseline_vs_through_hub() {
     // Requires real Modbus RTU on AIG-502.
-    assert!(true);
 }

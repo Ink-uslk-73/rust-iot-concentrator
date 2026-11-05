@@ -1,4 +1,4 @@
-﻿//! src/vm/life.rs - LIFE domain (PLATE-C, 1000 ms).
+//! src/vm/life.rs - LIFE domain (PLATE-C, 1000 ms).
 use crate::core::bus::BusMessage;
 use crate::core::dispatcher::DomainKind;
 use crate::core::mode_switch::Priority;
@@ -31,8 +31,7 @@ mod tests {
 
     #[test]
     fn snapshot_roundtrip() {
-        let mut d = LifeDomain::default();
-        d.processed = 99;
+        let mut d = LifeDomain { processed: 99 };
         let s = d.snapshot();
         d.processed = 0;
         d.restore(&s);

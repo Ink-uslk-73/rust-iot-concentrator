@@ -1,4 +1,4 @@
-﻿//! src/vm/hard.rs - HARD domain (PLATE-A, 10 ms).
+//! src/vm/hard.rs - HARD domain (PLATE-A, 10 ms).
 use crate::core::bus::BusMessage;
 use crate::core::dispatcher::DomainKind;
 use crate::core::mode_switch::Priority;
@@ -31,8 +31,7 @@ mod tests {
 
     #[test]
     fn snapshot_roundtrip() {
-        let mut d = HardDomain::default();
-        d.processed = 42;
+        let mut d = HardDomain { processed: 42 };
         let s = d.snapshot();
         d.processed = 0;
         d.restore(&s);

@@ -1,4 +1,5 @@
-﻿use serde::Deserialize;
+#![allow(dead_code)]
+use serde::Deserialize;
 use std::collections::HashMap;
 
 #[derive(Deserialize)] struct ConcentratorCfg { general: General, domain: HashMap<String, DomainCfg>, mode: ModeCfg, balancer: BalancerCfg, watchdog: WatchdogCfg, bus: BusCfg, gateway: GatewayCfg, metrics: MetricsCfg }

@@ -1,4 +1,5 @@
-﻿use serde::Deserialize;
+#![allow(dead_code)]
+use serde::Deserialize;
 
 #[derive(Deserialize)] struct GatewayFile { server: Server, tls: Tls, terminal: Terminal, audit: Audit }
 #[derive(Deserialize)] struct Server { dashboard_addr: String, terminal_addr: String, require_mtls: bool, min_tls_version: String }

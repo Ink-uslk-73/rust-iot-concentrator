@@ -1,4 +1,4 @@
-﻿//! src/vm/soft.rs - SOFT domain (PLATE-B, 100 ms).
+//! src/vm/soft.rs - SOFT domain (PLATE-B, 100 ms).
 use crate::core::bus::BusMessage;
 use crate::core::dispatcher::DomainKind;
 use crate::core::mode_switch::Priority;
@@ -31,8 +31,7 @@ mod tests {
 
     #[test]
     fn snapshot_roundtrip() {
-        let mut d = SoftDomain::default();
-        d.processed = 7;
+        let mut d = SoftDomain { processed: 7 };
         let s = d.snapshot();
         d.processed = 0;
         d.restore(&s);
