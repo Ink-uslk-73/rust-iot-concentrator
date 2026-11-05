@@ -91,7 +91,7 @@ impl PtyHandle {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    
 
     #[cfg(unix)]
     #[test]

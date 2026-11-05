@@ -60,7 +60,7 @@ mod tests {
         let eth0 = dir.path().join("eth0/statistics");
         std::fs::create_dir_all(&eth0).unwrap();
         let mut f = std::fs::File::create(eth0.join("rx_bytes")).unwrap();
-        write!(f, "12345\n").unwrap();
+        writeln!(f, "12345").unwrap();
 
         let r = Arc::new(Registry::new());
         let c = NetCollector::with_base(Arc::clone(&r), dir.path());
