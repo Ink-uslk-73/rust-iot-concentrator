@@ -3,6 +3,7 @@
 use nlink::netlink::{Connection, Route};
 use super::card::{NetworkCard, LinkStats};
 
+#[derive(Debug)]
 pub struct LinuxCard {
     pub name: String,
     pub mac: String,
@@ -41,14 +42,20 @@ impl NetworkCard for LinuxCard {
         let rt = tokio::runtime::Runtime::new().map_err(|e| e.to_string())?;
         rt.block_on(async {
             let conn = Connection::<Route>::new().map_err(|e| e.to_string())?;
-            let all = conn.get_stats64_all().await.map_err(|e| e.to_string())?;
-            let s = all.iter().find(|s| s.ifindex == self.index)
+            let links = conn.get_links().await.map_err(|e| e.to_string())?;
+            let link = links.iter()
+                .find(|l| l.ifindex() == self.index as u32)
                 .ok_or_else(|| "stats not found".to_string())?;
+            let s = link.stats().ok_or_else(|| "no stats".to_string())?;
             Ok(LinkStats {
-                rx_bytes: s.rx_bytes, tx_bytes: s.tx_bytes,
-                rx_packets: s.rx_packets, tx_packets: s.tx_packets,
-                rx_errors: s.rx_errors, tx_errors: s.tx_errors,
-                rx_drops: s.rx_dropped, tx_drops: s.tx_dropped,
+                rx_bytes: s.rx_bytes() as u64,
+                tx_bytes: s.tx_bytes() as u64,
+                rx_packets: s.rx_packets() as u64,
+                tx_packets: s.tx_packets() as u64,
+                rx_errors: s.rx_errors() as u64,
+                tx_errors: s.tx_errors() as u64,
+                rx_drops: s.rx_dropped() as u64,
+                tx_drops: s.tx_dropped() as u64,
             })
         })
     }
