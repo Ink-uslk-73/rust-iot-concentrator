@@ -6,7 +6,7 @@ pub enum Platform { Linux, Windows, Other }
 impl Platform {
     pub fn current() -> Self {
         #[cfg(target_os = "linux")]
-        { return Platform::Linux; }
+        { Platform::Linux }
         #[cfg(windows)]
         { Platform::Windows}
         #[cfg(not(any(target_os = "linux", windows)))]
