@@ -69,7 +69,7 @@ impl SelfTelemetry {
         // Temperatures: Linux only
         #[cfg(target_os = "linux")]
         {
-            for (i, comp) in self.sys.components().iter().enumerate() {
+            for (i, comp) in sysinfo::Components::new_with_refreshed_list().iter().enumerate() {
                 registry.set_gauge(format!("self.temp.{}", i), comp.temperature() as f64);
             }
         }

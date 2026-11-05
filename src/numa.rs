@@ -1,4 +1,4 @@
-﻿//! src/numa.rs - Привязка потоков к NUMA-узлам и ядрам.
+//! src/numa.rs - Привязка потоков к NUMA-узлам и ядрам.
 //!
 //! Для 2x AMD EPYC 7002 (2 NUMA node, 64 ядра/сокет):
 //! - HARD -> node 0, cores 0-7, SCHED_FIFO 90, mlockall
@@ -279,12 +279,11 @@ fn set_cpu_affinity(cores: &[usize]) -> Result<(), NumaError> {
 fn set_mempolicy_preferred(node: u32) -> Result<(), NumaError> {
     const MPOL_PREFERRED: libc::c_int = 1;
     unsafe {
-        let mut mask: libc::c_ulong = 0;
-        if node < (std::mem::size_of::<libc::c_ulong>() * 8) as u32 {
-            mask = 1u64 << node;
+        let mask: libc::c_ulong = if node < (std::mem::size_of::<libc::c_ulong>() * 8) as u32 {
+            1u64 << node
         } else {
             return Err(NumaError::Config(format!("node {} too large", node)));
-        }
+        };
         let ret = libc::syscall(
             libc::SYS_set_mempolicy,
             MPOL_PREFERRED,
